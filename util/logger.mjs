@@ -30,9 +30,12 @@ export function debugLog(level, ...content) {
                 process.stdout.write( '\n\n' );
             }
         }
-    } catch (err) {
+    } catch (excep) {
+
         process.stdout.write( new Date().toISOString() + ' : ' );
-        process.stdout.write(err.stack);
+        process.stdout.write('DebugLog Failed to Print: ');
+        process.stdout.write(e);
+        process.stdout.write(excep.stack);
         process.stdout.write( '\n\n' );
     }
 }

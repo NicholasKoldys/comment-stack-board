@@ -113,7 +113,7 @@ async function checkGetRoute(req, res) {
         
     } catch (e) {
         // * Throw exception so default 404 is sent.
-        debugLog(3, '', e, e.stack);
+        debugLog(3, 'Check GET Route Failed: ', e, ' | ', e.stack);
         // ? 404 : Page Not Found
         return declineRoute(404, res, 'Page Does Not Exist');
     }
@@ -170,7 +170,7 @@ async function checkPostRoute(req, res) {
         }
 
     } catch (e) {
-        debugLog(3, '', e, e.stack);
+        debugLog(3, 'Check POST Route Failed: ', e, ' | ', e.stack);
         // ? 400 : Bad Request
         return declineRoute(400, res, "Bad Request");
     }
@@ -192,7 +192,7 @@ async function getStaticPage(status, route, response, addHeaders) {
 
         return forwardContent(status, response, fileContents, mapValueArr[1], addHeaders);
         
-    } catch (e) { debugLog(1, 'Static Route Fetch Error : ',  e, e.stack); }
+    } catch (e) { debugLog(1, 'Static Route Fetch Error: ', e, ' | ', e.stack); }
 }
 
 /**
@@ -215,7 +215,7 @@ async function getDynamicCommentPage(status, route, response, asyncContentFetch,
 
         return forwardContent(status, response, dynamicContent, mapValueArr[1], addHeaders);
 
-    } catch (e) { debugLog(1, 'Dyanmic Route Fetch Error : ',  e, e.stack); }
+    } catch (e) { debugLog(1, 'Dyanmic Route Fetch Error : ', e, ' | ', e.stack); }
 }
 
 /**
@@ -243,7 +243,7 @@ function forwardContent(status, response, outputContent, contentType, addHeaders
 
         return response.end(outputContent);
         
-    } catch(e) { debugLog(7, 'Failed to send forwardContent.', e, e.stack); }
+    } catch(e) { debugLog(7, 'Failed to ForwardContent: ', e, ' | ', e.stack); }
 }
 
 /**
@@ -287,7 +287,7 @@ async function isEmailAttemptValid(cookie) {
 
         return true;
 
-    } catch (e) { debugLog(3, '', e, e.stack); return false; }
+    } catch (e) { debugLog(3, 'isEmailAttemptValid Failed: ', e, ' | ', e.stack); return false; }
 }
 
 /**
@@ -346,7 +346,7 @@ async function processLoginRoute(req, res) {
                 } );
 
         } catch (e) {
-            debugLog(3, '', e, e.stack);
+            debugLog(3, 'Login Failed: ', e, ' | ', e.stack);
             // * Un-Authorized is a common 
             if(e == 'Un-Authorized') {
                 // return declineRoute( 401, res, 'Un-Authorized' );
@@ -446,7 +446,7 @@ async function processSignupRoute(req, res) {
             debugLog(7, 'Confirmation email has been: ', result.labelIds[0]);
 
         } catch (e) {
-            debugLog(3, '', e, e.stack);
+            debugLog(3, 'SignUp Failed: ', e, ' | ', e.stack);
             // ? 400 : Bad Request
             return declineRoute(400, res, 'Name, Email, Password cannot be accepted.');
         }
@@ -544,7 +544,7 @@ async function processConfirmEmailRoute(req, res) {
             });
 
         } catch (e) {
-            debugLog(3, '', e, e.stack);
+            debugLog(3, 'Confirm Email Failed: ', e, ' | ', e.stack);
             if(e.message == 'Something went wrong.') {
                 // delete all cookies and send strong error to restart signup
                 // show alternate page with instructions.
@@ -619,7 +619,7 @@ async function processCommentPost(req, res, userId) {
             return forwardContent(200, res, Buffer.from(isCommentCreated, 'utf-8'), 'text/plain');
 
         } catch (e) {
-            debugLog(3, '', e, e.stack);
+            debugLog(3, 'Comment Precess Failed: ', e, ' | ', e.stack);
             return declineRoute(400, res, 'CommentFailed.')
         }
     });

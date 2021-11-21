@@ -58,7 +58,7 @@ async function getAuthorization() {
             oAuth2Client.setCredentials(authEFile);
             return oAuth2Client;
         }
-    } catch (e) { debugLog(3, '', e, e.stack); }
+    } catch (e) { debugLog(3, 'Reading Authorization Failed: ', e, ' | ', e.stack); }
 }
 
 /**
@@ -102,7 +102,7 @@ async function generateAccessToken(oAuth2Client, isExpired) {
         return oAuth2Client;
 
     } catch (e) { 
-        debugLog(3, 'Issue with getting Token: ', e); 
+        debugLog(3, 'CRITCIAL! Issue with getting Token: ', e , ' | ', e.stack); 
         debugLog(6, 'Writing Empty Autho Token for review.');
         // Remove authorization token so server is forced to renew.
         writeAuthorizationToken('');
@@ -130,7 +130,7 @@ async function getGmailClient() {
 
     } catch (e) {
         if(e.errno == 'ENOTFOUND') {
-            debugLog(3, 'Failed getting GmailClient: Unable to send the request due to internet connection.'); 
+            debugLog(3, 'CRITICAL! Failed getting GmailClient: Unable to send the request due to internet connection.'); 
         } else {
             debugLog(3, 'Failed getting GmailClient: ', e);
         }
@@ -159,7 +159,7 @@ async function sendMail(recipient, emailDescription, emailContent, file) {
         const subject = emailDescription;
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
         const messageParts = [
-            `From: Comment-Message-Stack Mailer <${process.env.GM_CLIENT_EMAIL}>`,
+            `From: COMMENT-STACK-MESSAGE-BOARD Mailer <${process.env.GM_CLIENT_EMAIL}>`,
             `To: ${recipient}`,
             'Content-Type: text/html; charset=utf-8',
             'MIME-Version: 1.0',
@@ -174,7 +174,7 @@ async function sendMail(recipient, emailDescription, emailContent, file) {
 
         return sentMessage.data;
 
-    } catch (e) { debugLog(1, "Request to send email Failed : ", e, e.stack); }
+    } catch (e) { debugLog(1, "Request to send email Failed : ", e, ' | ', e.stack); }
 }
 
 /**
@@ -206,7 +206,7 @@ function writeAuthorizationToken(authoToken) {
     debugLog(6, 'Writing Authorization Token: ', jsonedToken);
     
     dsxfs.writeFile(AUTHO_PATH, JSON.stringify(jsonedToken), (err) => {
-        debugLog(3, '', err);
+        debugLog(3, 'Failed Writing Autorization: ', err);
     });
 }
 
@@ -231,7 +231,7 @@ async function testMailer() {
 
         return debugLog(3, 'GMail Auth Profile: ', profile.data);
         
-    } catch (e) { debugLog(1, 'Emailer Test Failed: ', e); return false; }
+    } catch (e) { debugLog(1, 'Emailer Test Failed: ', e, ' | ', e.stack); return false; }
 }
 
 export { testMailer, writeAuthorizationToken, sendMail };

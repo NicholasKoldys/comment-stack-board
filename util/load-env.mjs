@@ -58,7 +58,7 @@ export async function setPepperEnv() {
         }
         throw 'Unable to execute query.';
     } catch (e) {
-        debugLog(3, '', e, e.stack);
+        debugLog(3, 'CRITICAL! Loading Env Failed: ', e, ' | ', e.stack);
         return false;
     }
 }
