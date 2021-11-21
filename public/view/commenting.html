@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        :root {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        .hidden-ele {
+            display: none;
+        }
+        .show-thread {
+            background-color: green;
+        }
+        .hide-thread {
+            background-color: #b3b3b370;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/"><button id="homeBtn">Home</button></a>
+    </header>
+
+    <form id="mainThreadCommentForm" action="/add+comment" method="POST" target="" onsubmit="return ;">
+        <textarea id="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
+        
+        <!-- Prevent implicit submission of the form -->
+        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+
+        <button id="commentSubmitBtn" type="button">Submit</button>
+        <button id="commentCancelBtn" type="button">Cancel</button>
+    </form>
+
+    <form id="commentFormTemplate" class="hidden-ele" action="/add+comment" method="POST" target="" onsubmit="return ;">
+        <textarea class="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
+        
+        <!-- Prevent implicit submission of the form -->
+        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+
+        <button name="submit" type="button">Submit</button>
+        <button name="cancel" type="button">Cancel</button>
+    </form>
+
+    <div>
+        <ul id="main-thread">#REPLACE-W-COMMENTS#</ul> <!-- main-thread -->
+    </div>
+
+    <script>
+
+        function sendComment( threadId, commentString ) {
+            let commentObj = {
+                thread_id : threadId,
+                comment : commentString
+            };
+
+            if(commentObj.comment == '') {
+                console.log('Comment form err.');
+                return ;
+            }
+
+            let comX = new XMLHttpRequest();
+            comX.responseType = 'text/plain';
+            comX.open('POST', "/add+comment");
+            comX.setRequestHeader("Content-Type", "application/json");
+
+            comX.onload = function (e) {
+                // Check for 300(redirect)/400(client)/500(server)
+                if (this.status === 200) {
+                    // Note: .response instead of .responseText
+                    console.log(this.response);
+                }
+
+                //Unauthorized
+                if(this.status === 401) {
+                    console.log('Un-Authorized');
+                }
+            };
+
+            comX.send( JSON.stringify(commentObj) );
+        }
+
+        function createCommentForm(parentCommentId, btnElement) {
+            let formTemplate = document.getElementById( 'commentFormTemplate' ).cloneNode(true);
+                formTemplate.id = '';
+            let textInputField = formTemplate.children.namedItem('comment');
+            let submitBtn = formTemplate.children.namedItem('submit');
+            let cancelBtn = formTemplate.children.namedItem('cancel');
+
+                                
+            submitBtn.onclick = function() {
+                let comment = textInputField.value;
+                sendComment( parentCommentId, comment );
+            }
+
+            cancelBtn.onclick = function() {
+                textInputField.value = '';
+            }
+
+            btnElement.insertAdjacentElement( 'beforebegin', formTemplate );
+            formTemplate.classList.toggle('hidden-ele');
+        }
+
+        function revealAllAddCommentBtns() {
+            let addCommentBtns = document.getElementsByClassName('createCommentFormBtn');
+
+            for(let i=0; i < addCommentBtns.length; i++) {
+                addCommentBtns[i].classList.remove('hidden-ele');
+            }
+        }
+
+        function revealAllCollapseableThreads() {
+            let collapsableThreads = document.getElementsByClassName('newThread');
+
+            for(let i=0; i < collapsableThreads.length; i++) {
+
+                if(collapsableThreads[i].childElementCount > 0) {
+                    collapsableThreads[i].classList.toggle('hidden-ele');
+                }
+            }
+        }
+        
+        function applyCreateCommentFormBtnOnClick() {
+            let createCommentFormBtns = document.getElementsByClassName('createCommentFormBtn');
+
+            for(let i=0; i < createCommentFormBtns.length; i++) {
+                
+                let commentId = createCommentFormBtns[i].parentElement.id.split('comment_')[1];
+                createCommentFormBtns[i].onclick = function () {
+                    createCommentForm(commentId, this);
+                    this.classList.toggle('hidden-ele');
+                }
+            }
+        }
+
+        function applyThreadCollapseBtnOnclick() {
+            let threadCollapseBtns = document.getElementsByClassName('threadCollapseBtn');
+
+            for(let i=0; i < threadCollapseBtns.length; i++) {
+
+                let newThread = threadCollapseBtns[i].parentElement.getElementsByClassName('newThread')[0];
+
+                if(newThread?.children.length > 0) {
+                    threadCollapseBtns[i].classList.toggle('hidden-ele');
+                    threadCollapseBtns[i].onclick = function () {
+                        newThread.classList.toggle('hidden-ele');
+
+                        if(newThread.classList.contains('hidden-ele')) {
+                            this.innerHTML = 'Show Comments';
+                            this.classList.add('show-thread');
+                            this.classList.remove('hide-thread');
+                        } else {
+                            this.innerHTML = 'Hide Comments';
+                            this.classList.add('hide-thread');
+                            this.classList.remove('show-thread');
+                        }
+                    }
+                }
+            }
+        }
+
+        function applyMainThreadBtnsOnClick() {
+            let mainThreadCommentForm = document.getElementById( 'mainThreadCommentForm' );
+            let textInputField = mainThreadCommentForm.children.namedItem('comment');
+            let submitBtn = document.getElementById('commentSubmitBtn');
+            let cancelBtn = document.getElementById('commentCancelBtn');
+                                
+            submitBtn.onclick = function() {
+                let comment = textInputField.value;
+                sendComment( 0, comment );
+            }
+
+            cancelBtn.onclick = function() {
+                textInputField.value = '';
+            }
+        }
+
+        function handleElements() {
+            revealAllAddCommentBtns();
+            revealAllCollapseableThreads();
+            applyCreateCommentFormBtnOnClick();
+            applyThreadCollapseBtnOnclick();
+            applyMainThreadBtnsOnClick();
+        }
+
+        var observer = new MutationObserver( (mut, obsInstance) => {
+            var eofEle = document.getElementById('EOF');
+            if (eofEle) {
+                obsInstance.disconnect();
+                handleElements();
+                return;
+            }
+        });
+
+        observer.observe(document, {
+            childList: true,
+            subtree: true
+        });
+    </script>
+    
+</body>
+</html>

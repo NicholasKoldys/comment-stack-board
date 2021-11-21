@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        :root {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        .hidden-ele {
+            display: none !important;/* Allows toggleing with shown-flex as default */
+        }
+        .shown-flex-ele {
+            display: flex;
+        }
+        .show-thread {
+            background-color: green;
+        }
+        .hide-thread {
+            background-color: grey;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/"><button id="homeBtn">Home</button></a>
+        <button id="loginBtn">Login</button>
+            <script>
+                let loginBtn = document.getElementById("loginBtn");
+
+                loginBtn.onclick = () => {
+                    let loginPrompt = document.getElementById("loginPrompt");
+                    loginPrompt.classList.add("shown-flex-ele");
+                    loginPrompt.classList.toggle("hidden-ele");
+                };
+            </script>
+        <a href="/signup"><button>Sign-up</button></a>
+    </header>
+
+    <div id="loginPrompt" class="hidden-ele .shown-flex-ele" style="flex-direction: column;">
+
+        <form id="loginForm" style="display: flex; flex-direction: column;"
+        action="/login" method="POST">
+
+            <label for="name">Name: 
+                <input id="loginNameInput" type="text" name="name" required placeholder="display name"/>
+            </label>
+            <label for="pwd">Password: 
+                <input id="loginPwdInput" type="password" name="pwd" required placeholder="********"/>
+            </label>
+
+            <!-- Prevent implicit submission of the form -->
+            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+
+            <!-- Use this submit button because it allows for redirecting and method passing beyond a  required redirect. Different statuses could be used to show alternate information, and loading progress can be displayed which may otherwise look like an error if the page doesnt load from a form submission. -->
+            <button id="loginSubmitBtn" type="button" >Submit</button>
+            <button id="loginCancelBtn" type="button" >Cancel</button>
+
+        </form>
+            <script>
+                let loginCancelBtn = document.getElementById('loginCancelBtn');
+                    loginCancelBtn.onclick = () => {
+                        let loginPrompt = document.getElementById("loginPrompt");
+                        loginPrompt.classList.add("hidden-ele");
+                        loginPrompt.classList.remove("shown-flex-ele");
+
+                        let inputFields = loginPrompt.getElementsByTagName('input');
+                        inputFields[0].value = '';
+                        inputFields[1].value = '';
+                    }
+
+                let loginSubmitBtn = document.getElementById("loginSubmitBtn");
+                loginSubmitBtn.onclick = () => {
+
+                    /* * Conver Into JSON Object Method*/
+                    // ! This method is comonly over 6bytes = BEST
+                    var loginObj = new Object();
+                    loginObj.name = document.getElementById("loginNameInput").value;
+                    loginObj.pwd = document.getElementById("loginPwdInput").value;
+
+                    if(loginObj.name === '' || loginObj.pwd === '') {
+                        console.log('Login Form Err');
+                        return ;
+                    }
+
+                    let logR = new XMLHttpRequest();
+                    logR.responseType = 'text/plain';
+                    logR.open('POST', "/login");
+                    logR.setRequestHeader("Content-Type", "application/json");
+
+                    /* * Use String with encType - application/x-www-form-urlencoded */
+                    // ! This method is is commonly over 20 bytes.
+                    // let name = document.getElementById("loginNameInput").value;
+                    // let pwd = document.getElementById("loginPwdInput").value;
+                    // let formInfo = `name=${name}&pwd=${pwd}`;
+                    
+                    // let logR = new XMLHttpRequest();
+                    // logR.responseType = 'text/html';
+                    // logR.open('POST', "/login");
+                    // logR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+
+                    logR.onload = function (e) {
+                        // Check for 300(redirect)/400(client)/500(server)
+                        if (this.status === 200) {
+                            // Note: .response instead of .responseText
+                            console.log(this.response);
+                        }
+
+                        if (this.status === 302) {
+                            console.log('Redirect');
+                            // Set the recieved string to url.
+                            window.location.assign(this.response);
+                        }
+
+                        //Unauthorized
+                        if(this.status === 401) {
+                            console.log('Un-Authorized');
+                        }
+                    };
+
+                    logR.send(JSON.stringify(loginObj));
+                };
+            </script>
+    </div>
+
+    <div>
+        <ul id="main-thread">#REPLACE-W-COMMENTS#</ul> <!-- main-thread -->
+    </div>
+
+    <script>
+
+        function revealAllCollapseableThreads() {
+            let collapsableThreads = document.getElementsByClassName('newThread');
+
+            for(let i=0; i < collapsableThreads.length; i++) {
+
+                if(collapsableThreads[i].childElementCount > 0) {
+                    collapsableThreads[i].classList.toggle('hidden-ele');
+                }
+            }
+        }
+
+        function applyThreadCollapseBtnOnclick() {
+            let threadCollapseBtns = document.getElementsByClassName('threadCollapseBtn');
+
+            for(let i=0; i < threadCollapseBtns.length; i++) {
+
+                let newThread = threadCollapseBtns[i].parentElement.getElementsByClassName('newThread')[0];
+
+                if(newThread?.children.length > 0) {
+                    threadCollapseBtns[i].classList.toggle('hidden-ele');
+                    threadCollapseBtns[i].onclick = function () {
+                        newThread.classList.toggle('hidden-ele');
+
+                        if(newThread.classList.contains('hidden-ele')) {
+                            this.innerHTML = 'Show Comments';
+                            this.classList.add('show-thread');
+                            this.classList.remove('hide-thread');
+                        } else {
+                            this.innerHTML = 'Hide Comments';
+                            this.classList.add('hide-thread');
+                            this.classList.remove('show-thread');
+                        }
+                    }
+                }
+            }
+        }
+
+        function handleElements() {
+            revealAllCollapseableThreads();
+            applyThreadCollapseBtnOnclick();
+        }
+
+        var observer = new MutationObserver( (mut, obsInstance) => {
+            var eofEle = document.getElementById('EOF');
+            if (eofEle) {
+                obsInstance.disconnect();
+                handleElements();
+                return;
+            }
+        });
+
+        observer.observe(document, {
+            childList: true,
+            subtree: true
+        });
+    </script>
+    
+</body>
+</html>

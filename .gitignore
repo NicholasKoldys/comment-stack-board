@@ -102,3 +102,12 @@ dist
 
 # TernJS port file
 .tern-port
+
+# Project Specific
+.private/
+.db.txt
+.test
+db/
+
+# NON-Push Test File
+NPTEST*

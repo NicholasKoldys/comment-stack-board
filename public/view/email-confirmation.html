@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <style>
+        :root {
+            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3ch;
+        }
+        a {
+            font-weight: bolder;
+            font-size: 1.8ch;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10vh;
+        }
+        .center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 75vw;
+            padding: 5ch;
+            background-color: #b3b3b370;
+        }
+        .text-box {
+            display: flex;
+            flex-direction: column;
+            width: 75%;
+            padding: 5ch;
+            background-color: #b3b3b3b7;
+        }
+        #eConfirm > button {
+            text-align: center;
+            font-size: 2ch;
+            font-weight: bold;
+            margin: 1ch;
+            padding: 2ch;
+            border: .3ch solid green;
+            border-radius: .5ch;
+            background-color: rgb(105, 156, 105);
+            /* color: black; */
+            cursor: pointer;
+        }
+        #eConfirm > button:hover {
+            background-color: rgb(0, 160, 0);
+            color: white;
+        }
+        #eConfirm > input {
+            text-align: center;
+            font-size: 2ch;
+            margin: 1ch;
+            padding: 2ch;
+        }
+        #prompt {
+            display: block;
+            text-align: center;
+        }
+        #incorrectCodeText {
+            display: none;
+            text-align: center;
+            font-size: 2ch;
+            font-weight: bolder;
+            margin: 1ch;
+            padding: 2ch;
+            background-color: #ff6f6f;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="center">
+            <h1>COMMENT-MESSAGE-STACK</h1>
+            <div class="text-box">
+                <form id="eConfirm" style="display: flex; flex-direction: column;"
+                    action="/confirm+email" method="POST" target="">
+                        <span id="prompt"><h2>Please enter email confirmation code</h3></span>
+                        <span id="incorrectCodeText"><h2>INCORRECT CODE</h2></span>
+                        <label for="ecode">Recieved Email Code:
+                        </label>
+                        <input id="ecodeConfirmInput" type="text" name="ecode" required placeholder="- - - - - - - -"/>
+                            <!-- Prevent implicit submission of the form -->
+                        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+                        <button id="eConfirmSubmitBtn" type="button">Submit</button>
+                            <script>
+
+                                function incorrectCodeInput() {
+                                    document.getElementById('ecodeConfirmInput').style.backgroundColor = '#ff6f6f';
+                                    document.getElementById('prompt').style.display = 'none';
+                                    document.getElementById('incorrectCodeText').style.display = 'block';
+                                }
+
+                                // TODO instead of button automatically read field on 8 digit enter.
+                                let eConfirmSubmitBtn = document.getElementById("eConfirmSubmitBtn");
+                                eConfirmSubmitBtn.onclick = () => {
+                                    var postData = new Object();
+                                    postData.ecode = document.getElementById("ecodeConfirmInput").value;
+                                    if(postData.ecode === '') {
+                                        incorrectCodeInput();
+                                        return ;
+                                    }
+                                    let ecodeXhr = new XMLHttpRequest();
+                                    ecodeXhr.responseType = 'text/plain';
+                                    ecodeXhr.open('POST', "/confirm+email");
+                                    ecodeXhr.setRequestHeader("Content-Type", "application/json");
+                                    ecodeXhr.onload = function (e) {
+                                        
+                                        if (this.status >= 200 || this.status <= 299) {
+                                            window.location.assign('/');
+                                        }
+
+                                        if (this.status >= 300 || this.status <= 399) {
+                                            window.location.assign('/signup');
+                                        }
+
+                                        if (this.status >= 400) {
+                                            incorrectCodeInput();
+                                        }
+                                    };
+                                    ecodeXhr.send(JSON.stringify(postData));
+                                };
+                            </script>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

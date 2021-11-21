@@ -1,0 +1,189 @@
+<!doctype html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Simple Transactional Email</title>
+    <style>
+    :root {
+        font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    }
+    img {
+        border: none;
+        -ms-interpolation-mode: bicubic;
+        max-width: 100%; 
+    }
+
+    body {
+        background-color: #f6f6f6;
+        font-weight: 900;
+        -webkit-font-smoothing: antialiased;
+        margin: 0;
+        padding: 0;
+        -ms-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%; 
+    }
+
+    table {
+        border-collapse: separate;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+        width: 100%; 
+    }
+
+    table td {
+        vertical-align: top; 
+    }
+
+    /* Set a max-width, and make it display as block so it will automatically stretch to that width, but will also shrink down on a phone or something */
+    .container {
+        display: block;
+        margin: 0 auto !important;
+        /* makes it centered */
+        max-width: 580px;
+        padding: 10px;
+        width: 580px; 
+    }
+
+    /* This should also be a block element, so that it will fill 100% of the .container */
+    .content {
+        box-sizing: border-box;
+        display: block;
+        margin: 0 auto;
+        max-width: 580px;
+        padding: 10px; 
+    }
+
+    .main {
+        background: #b3b3b370;
+        border-radius: 3px;
+        width: 100%; 
+    }
+
+    .wrapper {
+        box-sizing: border-box;
+        padding: 20px; 
+    }
+
+    .content-block {
+        padding-bottom: 10px;
+        padding-top: 10px;
+    }
+
+    .footer {
+        background: #91919154;
+        clear: both;
+        margin-top: 10px;
+        text-align: center;
+        width: 100%; 
+        color: #000000;
+    }
+
+    .btn {
+        box-sizing: border-box;
+        width: 100%;
+    }
+    .btn table td {
+        border-radius: 5px;
+        box-sizing: border-box;
+        background-color: #3498db;
+        color: #ffffff;
+        /* cursor: pointer; */
+        display: inline-block;
+        margin: 0;
+        width: 100%;
+        padding: 12px 25px;
+        font-size: 4ch;
+        font-weight: 900;
+        text-decoration: none;
+        text-align: center;
+    }
+    /* .btn table td:hover {
+        background-color: #34495e;
+        border-color: #34495e; 
+    } */
+
+    /* .btn table td:focus {
+        background-color: #aad4f0;
+        border-color: #ffffff;
+        color: #000000;
+    } */
+
+    .preheader {
+        color: transparent;
+        display: none;
+        height: 0;
+        max-height: 0;
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        visibility: hidden;
+        mso-hide: all;
+        width: 0; 
+    }
+
+    .powered-by a {
+        font-size: 2ch;
+        text-decoration: underline; 
+    }
+
+    </style>
+</head>
+<html>
+    <body >
+        <span class="preheader">Activation Email for Comment Stack Message Board</span>
+        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="container">
+                <div class="content">
+
+                <table role="presentation" class="main">
+                <tr>
+                    <td class="wrapper">
+                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                        <tr>
+                        <td>
+                            <p>To activate your email and join the conversation at the Comment-Stack-Message Project copy the code: </p>
+                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" class="btn btn-primary">
+                            <tbody>
+                                <tr>
+                                <td align="left">
+                                    <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                                    <tbody>
+                                        <tr>
+                                            <td id="codeInput">#CODE#</td>
+                                        </tr>
+                                    </tbody>
+                                    </table>
+                                </td>
+                                </tr>
+                            </tbody>
+                            </table>
+                            <p>Then please paste your activation code into the "Recieved Email Code:" field.</p>
+                        </td>
+                        </tr>
+                    </table>
+                    </td> <!-- wrapper -->
+                </tr>
+                </table> <!-- main -->
+
+                    <div class="footer">
+                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="content-block">
+                                    <span class="apple-link">Comment Stack Message Board Project</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="content-block powered-by">
+                                    Powered by <a href="https://NicholasKoldys.dev/">NicholasKoldys.dev</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div> <!-- footer -->
+
+                </div> <!-- content -->
+            </td> <!-- container -->
+        </tr>
+        </table>
+    </body>
+</html>
