@@ -127,7 +127,7 @@
 
     <div class="container">
         <div class="center" >
-            <h1>COMMENT-MESSAGE-STACK</br>- Login -</h1>
+            <h1>COMMENT-STACK-MESSAGE-BOARD</br>- Login -</h1>
             <div class="text-box">
                 <form id="loginForm" action="/login" method="POST">
                     <label id="loginNameLabel" for="name">Name:</label>
@@ -245,14 +245,22 @@
                             // logR.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
                             logR.onload = function (e) {
-                                alert(this.status);
-                                if (this.status >= 200 || this.status <= 299) {
+
+                                /* if (this.status >= 200 && this.status <= 299) {
                                     window.location.assign('/');
                                 }
 
-                                if (this.status >= 300 || this.status <= 399) {
+                                if (this.status >= 300 && this.status <= 399) {
                                     window.location.assign(this.response);
                                 }
+                                */
+                                
+
+
+                                console.log(this);
+                                alert(this.status);
+                                alert(this.response);
+
 
                                 if(this.status >= 400) {
                                     incorrectFieldInput( 
