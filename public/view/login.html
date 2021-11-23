@@ -83,13 +83,17 @@
         #loginPwdInput {
             grid-area: in2;
         }
+        form#loginForm > button {
+            padding: 2ch;
+            font-size: 1.7ch;
+            font-weight: bold;
+            cursor: pointer;
+        }
         #loginSubmitBtn {
             grid-area: sub;
             border: .3ch solid black;
             border-radius: .5ch;
             background-color: rgb(105, 156, 105);
-            font-size: 1.7ch;
-            cursor: pointer;
         }
         #loginSubmitBtn:hover {
             border-color: white;
@@ -97,8 +101,6 @@
         }
         #loginCancelBtn {
             grid-area: can;
-            font-size: 1.7ch;
-            cursor: pointer;
         }
         #loginCancelBtn:hover {
             border: darkgray;
@@ -192,7 +194,7 @@
                         }
                     })();
 
-                    ( function assignCancelOnClick() {
+                    ( function applyLoginCancelBtnOnClick() {
                         document.getElementById('loginCancelBtn').onclick = () => {
                             correctFieldInput();
                             let nameInput = document.getElementById("loginNameInput");
@@ -205,12 +207,9 @@
 
                     })();
 
-                    /* ( function assignLoginOnClick() {
+                    ( function applyLoginSubmitBtnOnClick() {
 
-                        
-                    })(); */
-
-                    let loginSubmitBtn = document.getElementById("loginSubmitBtn");
+                        let loginSubmitBtn = document.getElementById("loginSubmitBtn");
                         loginSubmitBtn.onclick = () => {
                             /* * Conver Into JSON Object Method*/
                             // ! This method is commonly over 6bytes = BEST
@@ -232,7 +231,7 @@
                             loginObj.pwd = pwdInput.value;
 
                             let logR = new XMLHttpRequest();
-                            logR.responseType = 'text/plain';
+                            logR.responseType = 'text/html';
                             logR.open('POST', "/login");
                             logR.setRequestHeader("Content-Type", "application/json");
 
@@ -251,29 +250,17 @@
 
                                 // * If Recieve OK - Proceed to home page.
                                 if (this.status >= 200 && this.status <= 299) {
-                                    if(this.getResponseHeader('Location') != '') {
+                                    if(this.getResponseHeader('Location') != '' && this.getResponseHeader('Location') != null) {
                                         window.location.assign(this.getResponseHeader('Location'));
-                                    } else if(this.response != '') {
-                                        window.location.assign(this.response);
                                     } else {
                                         window.location.assign('/');
                                     }
-
                                     return ;
                                 }
-
-                                // * If Recieve REDIRECT - follow given response.
-                                if (this.status >= 300 && this.status <= 399) {
-                                    if(this.getResponseHeader('Location') != '') {
-                                        window.location.assign(this.getResponseHeader('Location'));
-                                    } else if(this.response != '') {
-                                        window.location.assign(this.response);
-                                    } else {
-                                        window.location.assign('/');
-                                    }
-
-                                    return ;
-                                }
+                                
+                                /* if (this.status >= 300 && this.status <= 399) {
+                                    // ! Unable to Control redirects with XHR
+                                } */
 
                                 if(this.status >= 400 && this.status <= 499) {
                                     incorrectFieldInput( 
@@ -291,7 +278,7 @@
                             };
                             logR.send(JSON.stringify(loginObj));
                         };
-
+                    })();
                     
                 </script>
         </div>

@@ -82,13 +82,17 @@
         input#signUpPwdInput {
             grid-area: i3;
         }
+        form#signupLoginForm > button {
+            padding: 2ch;
+            font-size: 1.7ch;
+            font-weight: bold;
+            cursor: pointer;
+        }
         #signUpSubmitBtn {
             grid-area: su;
             border: .3ch solid black;
             border-radius: .5ch;
             background-color: rgb(105, 156, 105);
-            font-size: 1.7ch;
-            cursor: pointer;
         }
         #signUpSubmitBtn:hover {
             border-color: white;
@@ -96,8 +100,6 @@
         }
         #signUpCancelBtn {
             grid-area: cl;
-            font-size: 1.7ch;
-            cursor: pointer;
         }
         #signUpCancelBtn:hover {
             border: darkgray;
@@ -262,23 +264,58 @@
 
                             signupXhr.onload = function (e) {
 
-                                if(this.status === 200) {
-                                }
+                                // * If Recieve OK - Proceed to home page.
+                                if (this.status >= 200 && this.status <= 299) {
 
-                                if(this.status === 302) {
-                                    if(this.getAllResponseHeaders().includes('email-attempt: ')) {
-                                        let headerPortion = this.getAllResponseHeaders().split('email-attempt: ');
-                                        let attemptEmail = headerPortion[1].substr(0, headerPortion[1].indexOf('\n'));
-                                        window.location.assign(`/confirm+email?=${attemptEmail}`);
-                                    } else {
+                                    if(this.getResponseHeader('Location') != '') {
+                                        window.location.assign(this.getResponseHeader('Location'));
+                                    } else if(this.response != '') {
                                         window.location.assign(this.response);
+                                    } else {
+                                        window.location.assign('/');
                                     }
+
+                                    return ;
                                 }
 
-                                if(this.status === 401) {
+                                // * If Recieve REDIRECT - follow given response.
+                                if (this.status >= 300 && this.status <= 399) {
+
+                                    if(this.getResponseHeader('Location') != '') {
+
+                                        if(this.getAllResponseHeaders().includes('email-attempt: ')) {
+                                            let headerPortion = this.getAllResponseHeaders().split('email-attempt: ');
+                                            let attemptEmail = headerPortion[1].substr(0, headerPortion[1].indexOf('\n'));
+                                            window.location.assign(`${ this.getResponseHeader('Location') }'?=${ attemptEmail }`);
+
+                                            return ;
+                                        } else {
+                                            window.location.assign(this.getResponseHeader('Location'));
+                                        }
+                                        
+                                    } else if(this.response != '') {
+                                        window.location.assign(this.response);
+                                    } else {
+                                        window.location.assign('/');
+                                    }
+
+                                    return ;
                                 }
 
-                                if(this.status === 500) {
+                                if(this.status >= 400 && this.status <= 499) {
+                                    incorrectFieldInput( 
+                                        document.getElementById('loginNameInput'),
+                                        document.getElementById('loginPwdInput')
+                                    );
+
+                                    return ;
+                                }
+
+                                if(this.status >= 500 && this.status <= 599) {
+                                    alert('Please Notice! \nCOMMENT-STACK-MESSEGE-BOARD is currently undergoing maintenance.. \nPlease be patient, and checkback later. \n\nThank You.');
+                                    window.location.assign('/');
+
+                                    return ;
                                 }
                             };
 
