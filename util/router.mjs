@@ -68,13 +68,14 @@ async function checkGetRoute(req, res) {
         if(req.url === '/signup') {
             debugLog(3, 'Entering get.request "/signup"');
             // * If user attempts to signup with attempt-email waiting, user redirected to confirm+email link
-            let isValid = await isEmailAttemptValid(req.headers.cookie);
-            if(isValid) {
+            let isCurrentlyValid = await isEmailAttemptValid(req.headers.cookie);
+            if(isCurrentlyValid) {
                 // ? 302 : Redirect Found Resource
                 await forwardContent(302, res, Buffer.from('/confirm+email', 'utf-8'), 'text/plain',    
                     {
                         "Location" : "/confirm+email" // ? Must set location for redirect to work properly.
                     } );
+                    
             } else {
                 await getStaticPage(200, '/signup', res);
             }
@@ -104,6 +105,7 @@ async function checkGetRoute(req, res) {
         if(req.url === '/favicon.ico') {
             await getStaticPage(200, '/favicon.ico', res);
             return ;
+
 
         } else {
             // TODO write unrecognized GET to log.
@@ -147,6 +149,7 @@ async function checkPostRoute(req, res) {
 
         if(req.url == '/add+comment') {
             debugLog(3, 'Entering post.request "/add+comment"', req.socket.bytesRead);
+            // * Decline request if comment is too long
             if(req.socket.bytesRead > 891) { 
                 declineRoute(200, res, 'Comment Too Long');
                 return ;
@@ -339,7 +342,7 @@ async function processLoginRoute(req, res) {
             let cookieStr = `Access-Token=${jwtoken}; Expires=${jwtExp}; Path=/; Secure; HttpOnly`;
 
             // ? 302 : Found
-            return forwardContent( 302, res, Buffer.from('/', 'utf-8'), 'text/plain', 
+            return forwardContent( 200, res, Buffer.from('', 'utf-8'), 'text/plain', 
                 { 
                     "Set-Cookie" : cookieStr, 
                     'Location' : '/'
@@ -431,11 +434,11 @@ async function processSignupRoute(req, res) {
             ];
 
             // ? 302 : Found
-            forwardContent( 302, res, Buffer.from('', 'utf-8'), 'text/plain', 
+            forwardContent( 200, res, Buffer.from('', 'utf-8'), 'text/plain', 
                 {
                     "Set-Cookie" : cookieArr, 
                     "email-attempt" : sterileEmail, // * email-attempt header is used in the signup html, to create the url for user readability
-                    /* "Location" : '/' */ // ! Redirect is handled in client JS
+                    "Location" : '/'
                 } );
 
             let confirmationEmail = await setValuesInHTML('confirmation-email.html', {
@@ -537,7 +540,7 @@ async function processConfirmEmailRoute(req, res) {
                         return forwardContent( 201, res, Buffer.from('', 'utf-8'), 'text/plain', 
                             { 
                                 "Set-Cookie" : cookieArr,
-                                /* "Location" : '/' */ // ! Redirect is handled in client JS
+                                "Location" : '/'
                             } );
                     });
                 });
