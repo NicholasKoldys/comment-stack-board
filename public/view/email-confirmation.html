@@ -95,48 +95,76 @@
                             <!-- Prevent implicit submission of the form -->
                         <button type="submit" disabled style="display: none" aria-hidden="true"></button>
                         <button id="eConfirmSubmitBtn" type="button">Submit</button>
-                            <script>
-
-                                function incorrectCodeInput() {
-                                    document.getElementById('ecodeConfirmInput').style.backgroundColor = '#ff6f6f';
-                                    document.getElementById('prompt').style.display = 'none';
-                                    document.getElementById('incorrectCodeText').style.display = 'block';
-                                }
-
-                                // TODO instead of button automatically read field on 8 digit enter.
-                                let eConfirmSubmitBtn = document.getElementById("eConfirmSubmitBtn");
-                                eConfirmSubmitBtn.onclick = () => {
-                                    var postData = new Object();
-                                    postData.ecode = document.getElementById("ecodeConfirmInput").value;
-                                    if(postData.ecode === '') {
-                                        incorrectCodeInput();
-                                        return ;
-                                    }
-                                    let ecodeXhr = new XMLHttpRequest();
-                                    ecodeXhr.responseType = 'text/plain';
-                                    ecodeXhr.open('POST', "/confirm+email");
-                                    ecodeXhr.setRequestHeader("Content-Type", "application/json");
-                                    ecodeXhr.onload = function (e) {
-                                        
-                                        if (this.status >= 200 || this.status <= 299) {
-                                            window.location.assign('/');
-                                        }
-
-                                        if (this.status >= 300 || this.status <= 399) {
-                                            window.location.assign('/signup');
-                                        }
-
-                                        if (this.status >= 400) {
-                                            incorrectCodeInput();
-                                        }
-                                    };
-                                    ecodeXhr.send(JSON.stringify(postData));
-                                };
-                            </script>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+
+        function isCodeConditionMet(elementVal) {
+            if( elementVal.length >= 3 && elementVal.length <= 15 ) {
+                if(parseInt(elementVal) == elementVal) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function incorrectCodeInput() {
+            document.getElementById('ecodeConfirmInput').style.backgroundColor = '#ff6f6f';
+            document.getElementById('prompt').style.display = 'none';
+            document.getElementById('incorrectCodeText').style.display = 'block';
+        }
+
+        // TODO instead of button automatically read field on 8 digit enter.
+        let eConfirmSubmitBtn = document.getElementById("eConfirmSubmitBtn");
+            eConfirmSubmitBtn.onclick = () => {
+
+                var postData = new Object();
+                let codeInput = document.getElementById("ecodeConfirmInput");
+                
+                if(!isCodeConditionMet(codeInput.value)) {
+                    incorrectCodeInput();
+                    return ;
+                }
+                postData.ecode = codeInput.value;
+
+                let ecodeXhr = new XMLHttpRequest();
+                    ecodeXhr.responseType = 'text/plain';
+                    ecodeXhr.open('POST', "/confirm+email");
+                    ecodeXhr.setRequestHeader("Content-Type", "application/json");
+
+                    ecodeXhr.onload = function (e) {
+                    
+                        // * If Recieve OK - Proceed to home page.
+                        if (this.status >= 200 && this.status <= 299) {
+                            if(this.getResponseHeader('Location') != '' && this.getResponseHeader('Location') != null) {
+                                window.location.assign(this.getResponseHeader('Location'));
+                            } else {
+                                window.location.assign('/');
+                            }
+                            return ;
+                        }
+
+                        /* if (this.status >= 300 && this.status <= 399) {
+                            // ! Unable to Control redirects with XHR
+                        } */
+
+                        if(this.status >= 400 && this.status <= 499) {
+                            incorrectCodeInput();
+                            return ;
+                        }
+
+                        if(this.status >= 500 && this.status <= 599) {
+                            alert('Please Notice! \nCOMMENT-STACK-MESSEGE-BOARD is currently undergoing maintenance.. \nPlease be patient, and checkback later. \n\nThank You.');
+                            window.location.assign('/');
+                        }
+                        return ;
+                    };
+                ecodeXhr.send(JSON.stringify(postData));
+            };
+    </script>
     
 </body>
 </html>

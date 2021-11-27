@@ -234,6 +234,11 @@ function forwardContent(status, response, outputContent, contentType, addHeaders
 
     try {
         response.statusCode = status;
+
+        if(outputContent == null || outputContent == '') {
+            outputContent = Buffer.from('', 'utf-8');
+        }
+
         response.setHeader("Content-Length", Buffer.byteLength(outputContent));
         response.setHeader("Content-Type",  contentType);
 
@@ -264,14 +269,14 @@ async function declineRoute(status, response, message) {
  * Removes used cookies associated with server responses.
  * @returns 403 : Forbidden Access to client
  */
-function sendClearedCookies(status) {
+function sendClearedCookies(status, response) {
     let cookieArr = [
         `Username=${0}; Expires=${0}; Max-Age=${0}; Path=/; Secure; HttpOnly`, 
         `Attempt-Email=${0}; Expires=${0}; Max-Age=${0}; Path=/; Secure; HttpOnly`, 
         `Confirm-Nonce=${0}; Expires=${0}; Max-Age=${0}; Path=/; Secure; HttpOnly`
     ];
 
-    return forwardContent( status, res, Buffer.from('Please retry sign-up process again.', 'utf-8'), 'text/plain', { "Set-Cookie" : cookieArr } );
+    return forwardContent( status, response, Buffer.from('Please retry sign-up process again.', 'utf-8'), 'text/plain', { "Set-Cookie" : cookieArr } );
 }
 
 /**7
@@ -342,7 +347,7 @@ async function processLoginRoute(req, res) {
             let cookieStr = `Access-Token=${jwtoken}; Expires=${jwtExp}; Path=/; Secure; HttpOnly`;
 
             // ? 302 : Found
-            return forwardContent( 200, res, Buffer.from('', 'utf-8'), 'text/plain', 
+            return forwardContent( 200, res, null, 'text/plain', 
                 { 
                     "Set-Cookie" : cookieStr, 
                     'Location' : '/'
@@ -434,17 +439,18 @@ async function processSignupRoute(req, res) {
             ];
 
             // ? 302 : Found
-            forwardContent( 200, res, Buffer.from('', 'utf-8'), 'text/plain', 
+            forwardContent( 200, res, null, 'text/plain', 
                 {
                     "Set-Cookie" : cookieArr, 
                     "email-attempt" : sterileEmail, // * email-attempt header is used in the signup html, to create the url for user readability
-                    "Location" : '/'
+                    "Location" : '/confirm+email'
                 } );
 
             let confirmationEmail = await setValuesInHTML('confirmation-email.html', {
                 '#CODE#' : genECode
             });
             let result = await sendMail(sterileEmail, '☑️ Email Confirmation for Comment-Stack-Message', '', confirmationEmail);
+            // TODO if fail send to queue for resending.
             if(result == null) { throw 'Unable to send email to activate email'; }
             debugLog(7, 'Confirmation email has been: ', result.labelIds[0]);
 
@@ -507,7 +513,7 @@ async function processConfirmEmailRoute(req, res) {
 
             // * 3 - Use Ecode to retrieve link to Nonce and Login.
             let verifiedData = await getEcodeWLoginNonce( sterileEcode, sterileNameAttempt, sterileEmailAttempt );
-            if(verifiedData == null) { throw 'Something went wrong.'; }
+            if(verifiedData == null) { throw 'Incorrect-Ecode'; }
 
             // * 3 - ifExpired - Restart signup
             if(verifiedData.nonce_exp < Date.now()) {
@@ -537,7 +543,7 @@ async function processConfirmEmailRoute(req, res) {
                         ];
 
                         // ? 201 : Created
-                        return forwardContent( 201, res, Buffer.from('', 'utf-8'), 'text/plain', 
+                        return forwardContent( 201, res, null, 'text/plain', 
                             { 
                                 "Set-Cookie" : cookieArr,
                                 "Location" : '/'
@@ -553,7 +559,8 @@ async function processConfirmEmailRoute(req, res) {
                 // show alternate page with instructions.
                 // return declineRoute(404, res, '');
                 // TODO TEMP 404
-                return sendClearedCookies(404);
+                return sendClearedCookies(404, res);
+                // return declineRoute(400, res, '');
             }
             if(e.message == 'Incorrect-Ecode') {
                 // * Allow client to retry
@@ -574,10 +581,10 @@ async function processConfirmEmailRoute(req, res) {
                 //TODO TEMP DELETE , instead SEND NEW ECODE
                 await deleteLogin(e.login_id);
                 // TODO TEMP 303 : See Other , instead show prompt
-                return sendClearedCookies(303);
+                return sendClearedCookies(200, res);
             }
             // ? 404 : Page Not Found
-            return sendClearedCookies(404);
+            return sendClearedCookies(404, res);
         }
     });
 }
@@ -601,9 +608,10 @@ async function processCommentPost(req, res, userId) {
             let commentData = JSON.parse(postData);
 
             let testThreadId = commentData.thread_id;
-            let testComment = commentData.comment;
             if(testThreadId == 0) { testThreadId = null; } // * This statement is required as it is serverside conversion only.
-            if(testComment == '') { throw 'comment is empty.'; }
+
+            let testComment = commentData.comment;
+            if(testComment == '' || testComment == null) { throw 'comment is empty.'; }
 
             // TODO let sterileComment = sterlizeComment(testComment)
 
@@ -619,10 +627,10 @@ async function processCommentPost(req, res, userId) {
             }
 
             // ? 200 : Ok
-            return forwardContent(200, res, Buffer.from(isCommentCreated, 'utf-8'), 'text/plain');
+            return forwardContent(200, res, null, 'text/plain');
 
         } catch (e) {
-            debugLog(3, 'Comment Precess Failed: ', e, ' | ', e.stack);
+            debugLog(3, 'Comment Process Failed: ', e, ' | ', e.stack);
             return declineRoute(400, res, 'CommentFailed.')
         }
     });
@@ -631,6 +639,7 @@ async function processCommentPost(req, res, userId) {
 /**
  * 
  * @param res 
+ * 
  * @param route 
  */
 async function processThreadPage(res, route) {
@@ -662,8 +671,13 @@ async function processThreadPage(res, route) {
     let fileContents = await fs.readFile( mapValueArr[0] );
 
     return await ( async function sendFormatedThreadPage() {
+
+        let bufferedContent = Buffer.from(
+            await exportCommentPage( fileContents.toString('utf-8') ),
+            'utf-8'
+        );
         // ? 200 : Ok
-        forwardContent(200, res, await exportCommentPage( fileContents.toString('utf-8') ), mapValueArr[1]);
+        forwardContent(200, res, bufferedContent, mapValueArr[1]);
     })();
 }
 
