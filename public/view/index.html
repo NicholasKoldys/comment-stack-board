@@ -74,6 +74,20 @@
         #loginPwdInput {
             grid-area: ip;
         }
+        #nameTab {
+            position: absolute;
+            padding: 1ch;
+            color: white;
+            font-weight: bold;
+            background-color: #ff6f6f;
+        }
+        #pwdTab {
+            position: absolute;
+            padding: 1ch;
+            color: white;
+            font-weight: bold;
+            background-color: #ff6f6f;
+        }
         form#loginForm > button {
             padding: 2ch;
             font-size: 1.7ch;
@@ -111,19 +125,11 @@
             height: 100vh;
             width: 100vw;
         }
-        #nameTab {
-            position: absolute;
-            padding: 1ch;
-            color: white;
-            font-weight: bold;
-            background-color: #ff6f6f;
+        .thread {
+            /* overflow: hidden; */
         }
-        #pwdTab {
-            position: absolute;
-            padding: 1ch;
-            color: white;
-            font-weight: bold;
-            background-color: #ff6f6f;
+        .comment {
+            overflow: hidden;
         }
         .hidden {
             display: none !important;/* Allows toggleing with shown-flex as default */
@@ -176,18 +182,17 @@
     <div class="container">
         <div class="center">
             <h1>COMMENT-STACK-MESSAGE-BOARD</h1>
-            <div >
-                <ul id="main-thread">#REPLACE-W-COMMENTS#</ul> <!-- main-thread -->
-            </div>
         </div>
+    </div>
+
+    <div>
+        <ul id="main-thread">#REPLACE-W-COMMENTS#</ul> <!-- main-thread -->
     </div>
 
     <script>
 
-        
-
-        function isInputConditionMet(element) {
-            if( element.value.length >= 3 && element.value.length <= 15 ) {
+        function isInputConditionMet(elementVal) {
+            if( elementVal.length >= 3 && elementVal.length <= 15 ) {
                 return true;
             }
             return false;
@@ -235,7 +240,7 @@
                 } );
 
                 input.addEventListener( "focusout", () => {
-                    if( isInputConditionMet(input) ) {
+                    if( isInputConditionMet(input.value) ) {
                         input.style.backgroundColor = '#59a659'; // Green
                     } else {
                         input.style.backgroundColor = '#ff6f6f'; // Red
@@ -244,7 +249,7 @@
                 } );
 
                 input.addEventListener( "input", () => {
-                    if( isInputConditionMet(input) ) {
+                    if( isInputConditionMet(input.value) ) {
                         input.style.backgroundColor = '#59a659';
                     } else {
                         input.style.backgroundColor = '#ff6f6f';
@@ -260,8 +265,7 @@
             let loginCancelBtn = document.getElementById('loginCancelBtn');
                 loginCancelBtn.onclick = () => {
                     let loginPrompt = document.getElementById("loginPrompt");
-                    loginPrompt.classList.add("hidden-ele");
-                    loginPrompt.classList.remove("shown-flex-ele");
+                        loginPrompt.classList.toggle("hidden");
 
                     correctFieldInput();
 
@@ -270,7 +274,6 @@
                     pwdInput.value = '';
                     pwdInput.style.backgroundColor = '';
 
-                    loginPrompt.classList.toggle("hidden");
                     threadContainer.classList.toggle("greyed-out");
                     threadContainer.classList.toggle("hidden");
 
@@ -289,13 +292,13 @@
                     let nameInput = document.getElementById("loginNameInput");
                     let pwdInput = document.getElementById("loginPwdInput");
 
-                    if( !isInputConditionMet( nameInput ) ) {
+                    if( !isInputConditionMet( nameInput.value ) ) {
                         incorrectFieldInput(nameInput);
                         return ;
                     }
                     loginObj.name = nameInput.value;
 
-                    if( !isInputConditionMet( pwdInput ) ) {
+                    if( !isInputConditionMet( pwdInput.value ) ) {
                         incorrectFieldInput(pwdInput);
                         return ;
                     }
@@ -321,8 +324,6 @@
 
                         // * If Recieve OK - Proceed to home page.
                         if (this.status >= 200 && this.status <= 299) {
-                            console.log('Accepted');
-                            console.log(this.getAllResponseHeaders());
                             if(this.getResponseHeader('Location') != null && this.getResponseHeader('Location') != '') {
                                 window.location.assign(this.getResponseHeader('Location'));
                             } else {
@@ -336,10 +337,9 @@
                         } */
 
                         if(this.status >= 400 && this.status <= 499) {
-                            console.log('Declined');
                             incorrectFieldInput( 
-                                document.getElementById('loginNameInput'),
-                                document.getElementById('loginPwdInput')
+                                nameInput,
+                                pwdInput
                             );
                             return ;
                         }
@@ -355,16 +355,15 @@
         })();
     </script>
 
-
     <script>
 
-        function revealAllCollapseableThreads() {
+        function revealCollapsableThreads() {
             let collapsableThreads = document.getElementsByClassName('newThread');
 
             for(let i=0; i < collapsableThreads.length; i++) {
 
                 if(collapsableThreads[i].childElementCount > 0) {
-                    collapsableThreads[i].classList.toggle('hidden-ele');
+                    collapsableThreads[i].classList.toggle('hidden');
                 }
             }
         }
@@ -377,11 +376,11 @@
                 let newThread = threadCollapseBtns[i].parentElement.getElementsByClassName('newThread')[0];
 
                 if(newThread?.children.length > 0) {
-                    threadCollapseBtns[i].classList.toggle('hidden-ele');
+                    threadCollapseBtns[i].classList.toggle('hidden');
                     threadCollapseBtns[i].onclick = function () {
-                        newThread.classList.toggle('hidden-ele');
+                        newThread.classList.toggle('hidden');
 
-                        if(newThread.classList.contains('hidden-ele')) {
+                        if(newThread.classList.contains('hidden')) {
                             this.innerHTML = 'Show Comments';
                             this.classList.add('show-thread');
                             this.classList.remove('hide-thread');
@@ -396,7 +395,7 @@
         }
 
         function handleElements() {
-            revealAllCollapseableThreads();
+            revealCollapsableThreads();
             applyThreadCollapseBtnOnclick();
         }
 

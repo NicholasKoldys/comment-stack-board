@@ -10,7 +10,32 @@
         :root {
             font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
         }
-        .hidden-ele {
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-top: 5vh;
+        }
+        .center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            /* width: 75vw; */
+            padding: 5ch;
+            background-color: #b3b3b370;
+        }
+        li.thread {
+            /* overflow: hidden; */
+            list-style-type: none;
+        }
+        li.comment {
+            /* overflow: auto; */
+            word-wrap: break-word;
+            width: 34ch;
+        }
+        .hidden {
             display: none;
         }
         .show-thread {
@@ -23,6 +48,7 @@
 </head>
 <body>
 
+
     <header>
         <a href="/"><button id="homeBtn">Home</button></a>
     </header>
@@ -30,22 +56,28 @@
     <form id="mainThreadCommentForm" action="/add+comment" method="POST" target="" onsubmit="return ;">
         <textarea id="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
         
-        <!-- Prevent implicit submission of the form -->
+        <!-- * Prevent implicit submission of the form -->
         <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
         <button id="commentSubmitBtn" type="button">Submit</button>
         <button id="commentCancelBtn" type="button">Cancel</button>
     </form>
 
-    <form id="commentFormTemplate" class="hidden-ele" action="/add+comment" method="POST" target="" onsubmit="return ;">
+    <form id="commentFormTemplate" class="hidden" action="/add+comment" method="POST" target="" onsubmit="return ;">
         <textarea class="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
         
-        <!-- Prevent implicit submission of the form -->
+        <!-- * Prevent implicit submission of the form -->
         <button type="submit" disabled style="display: none" aria-hidden="true"></button>
 
         <button name="submit" type="button">Submit</button>
         <button name="cancel" type="button">Cancel</button>
     </form>
+
+    <div class="container">
+        <div class="center">
+            <h1>COMMENT-STACK-MESSAGE-BOARD</h1>
+        </div>
+    </div>
 
     <div>
         <ul id="main-thread">#REPLACE-W-COMMENTS#</ul> <!-- main-thread -->
@@ -103,24 +135,24 @@
             }
 
             btnElement.insertAdjacentElement( 'beforebegin', formTemplate );
-            formTemplate.classList.toggle('hidden-ele');
+            formTemplate.classList.toggle('hidden');
         }
 
         function revealAllAddCommentBtns() {
             let addCommentBtns = document.getElementsByClassName('createCommentFormBtn');
 
             for(let i=0; i < addCommentBtns.length; i++) {
-                addCommentBtns[i].classList.remove('hidden-ele');
+                addCommentBtns[i].classList.remove('hidden');
             }
         }
 
-        function revealAllCollapseableThreads() {
+        function revealCollapsableThreads() {
             let collapsableThreads = document.getElementsByClassName('newThread');
 
             for(let i=0; i < collapsableThreads.length; i++) {
-
+                // * if their are child elements like thread comments, then show it.
                 if(collapsableThreads[i].childElementCount > 0) {
-                    collapsableThreads[i].classList.toggle('hidden-ele');
+                    collapsableThreads[i].classList.toggle('hidden');
                 }
             }
         }
@@ -133,7 +165,7 @@
                 let commentId = createCommentFormBtns[i].parentElement.id.split('comment_')[1];
                 createCommentFormBtns[i].onclick = function () {
                     createCommentForm(commentId, this);
-                    this.classList.toggle('hidden-ele');
+                    this.classList.toggle('hidden');
                 }
             }
         }
@@ -146,11 +178,17 @@
                 let newThread = threadCollapseBtns[i].parentElement.getElementsByClassName('newThread')[0];
 
                 if(newThread?.children.length > 0) {
-                    threadCollapseBtns[i].classList.toggle('hidden-ele');
-                    threadCollapseBtns[i].onclick = function () {
-                        newThread.classList.toggle('hidden-ele');
 
-                        if(newThread.classList.contains('hidden-ele')) {
+                    // * Check if newThread goes past xScroll of client browser window.
+                    // if(newThread.children[0].clientWidth)
+                    console.log(newThread.children[0].clientWidth);
+
+                    threadCollapseBtns[i].classList.toggle('hidden');
+
+                    threadCollapseBtns[i].onclick = function () {
+                        newThread.classList.toggle('hidden');
+
+                        if(newThread.classList.contains('hidden')) {
                             this.innerHTML = 'Show Comments';
                             this.classList.add('show-thread');
                             this.classList.remove('hide-thread');
@@ -182,7 +220,7 @@
 
         function handleElements() {
             revealAllAddCommentBtns();
-            revealAllCollapseableThreads();
+            revealCollapsableThreads();
             applyCreateCommentFormBtnOnClick();
             applyThreadCollapseBtnOnclick();
             applyMainThreadBtnsOnClick();
