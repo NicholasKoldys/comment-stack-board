@@ -125,11 +125,28 @@
             height: 100vh;
             width: 100vw;
         }
-        .thread {
-            /* overflow: hidden; */
+        /* ul#main-thread {
+        } */
+        li.thread {
+            list-style-type: none;
         }
-        .comment {
-            overflow: hidden;
+        /* li.thread > ul.threadList {
+        } */
+        ul.threadList > li.comment {
+            list-style-type: none;
+            word-wrap: break-word;
+            width: 38ch;
+        }
+        /* li.comment > ul.newThread {
+        } */
+        li.comment > button { 
+            margin-bottom: 1ch;
+            padding: 1ch;
+        }
+        li.comment > div.commentBox {
+            margin-bottom: 1ch;
+            padding: 1ch;
+            background-color: grey;
         }
         .hidden {
             display: none !important;/* Allows toggleing with shown-flex as default */
@@ -191,19 +208,19 @@
 
     <script>
 
-        function isInputConditionMet(elementVal) {
+        function isInputValueCorrect(elementVal) {
             if( elementVal.length >= 3 && elementVal.length <= 15 ) {
                 return true;
             }
             return false;
         }
 
-        function correctFieldInput() {
+        function setCorrectInputFields() {
             document.getElementById('nameTab').classList.add( 'hidden' );
             document.getElementById('pwdTab').classList.add( 'hidden' );
         }
 
-        function incorrectFieldInput( ...elements) {
+        function setIncorrectInputFields( ...elements) {
             for(let ele of elements) {
                 ele.style.backgroundColor = "#ff6f6f";
                 ele.nextElementSibling.firstChild.classList.remove( 'hidden' );
@@ -240,16 +257,16 @@
                 } );
 
                 input.addEventListener( "focusout", () => {
-                    if( isInputConditionMet(input.value) ) {
+                    if( isInputValueCorrect(input.value) ) {
                         input.style.backgroundColor = '#59a659'; // Green
                     } else {
                         input.style.backgroundColor = '#ff6f6f'; // Red
                     }
-                    correctFieldInput();
+                    setCorrectInputFields();
                 } );
 
                 input.addEventListener( "input", () => {
-                    if( isInputConditionMet(input.value) ) {
+                    if( isInputValueCorrect(input.value) ) {
                         input.style.backgroundColor = '#59a659';
                     } else {
                         input.style.backgroundColor = '#ff6f6f';
@@ -267,7 +284,7 @@
                     let loginPrompt = document.getElementById("loginPrompt");
                         loginPrompt.classList.toggle("hidden");
 
-                    correctFieldInput();
+                    setCorrectInputFields();
 
                     nameInput.value = '';
                     nameInput.style.backgroundColor = '';
@@ -292,14 +309,14 @@
                     let nameInput = document.getElementById("loginNameInput");
                     let pwdInput = document.getElementById("loginPwdInput");
 
-                    if( !isInputConditionMet( nameInput.value ) ) {
-                        incorrectFieldInput(nameInput);
+                    if( !isInputValueCorrect( nameInput.value ) ) {
+                        setIncorrectInputFields(nameInput);
                         return ;
                     }
                     loginObj.name = nameInput.value;
 
-                    if( !isInputConditionMet( pwdInput.value ) ) {
-                        incorrectFieldInput(pwdInput);
+                    if( !isInputValueCorrect( pwdInput.value ) ) {
+                        setIncorrectInputFields(pwdInput);
                         return ;
                     }
                     loginObj.pwd = pwdInput.value;
@@ -337,7 +354,7 @@
                         } */
 
                         if(this.status >= 400 && this.status <= 499) {
-                            incorrectFieldInput( 
+                            setIncorrectInputFields( 
                                 nameInput,
                                 pwdInput
                             );
@@ -394,9 +411,40 @@
             }
         }
 
+        function checkVisibleThreads() {
+
+            function isEleOnScreen(element) {
+                let box = element.getBoundingClientRect();
+                if( (box.x + box.width) > window.innerWidth || box.x > window.innerWidth) {
+                    return false;
+                }
+                return true;
+            }
+
+            let comments = document.getElementsByClassName('comment');
+            for(let liComment of comments) {
+
+                if(liComment.classList.contains('hidden')) { continue ; }
+
+                if( isEleOnScreen(liComment) ) {
+                    let newThreadComment = liComment.children[3]?.children[0]?.children[0]?.children[0];
+                    if(newThreadComment) {
+                        if( !isEleOnScreen(newThreadComment) ){
+                            let threadCollapseBtn = liComment.children[2];
+                                threadCollapseBtn.click();
+                        }
+                    }
+                } else {
+                    let threadCollapseBtn = liComment.children[2];
+                        threadCollapseBtn.click();
+                }       
+            }
+        }
+
         function handleElements() {
             revealCollapsableThreads();
             applyThreadCollapseBtnOnclick();
+            checkVisibleThreads();
         }
 
         var observer = new MutationObserver( (mut, obsInstance) => {
