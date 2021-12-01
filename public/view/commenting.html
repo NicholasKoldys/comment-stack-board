@@ -56,6 +56,7 @@
             display: grid;
             grid-template-areas:
                 "inv inv inv"
+                "cou cou cou"
                 "tex tex tex"
                 "con con con"
                 "sub sub can"
@@ -74,6 +75,10 @@
             grid-area: inv;
             color: red;
             visibility: hidden;
+        }
+        form.addCommentForm > span.charCount {
+            grid-area: cou;
+            /* visibility: hidden; */
         }
         form.addCommentForm > button {
             margin-bottom: 1ch;
@@ -106,6 +111,7 @@
 
     <form id="commentFormTemplate" class="addCommentForm hidden" action="/add+comment" method="POST" target="" onsubmit="return ;">
         <span class="invalid" name="invalid">Comment 115 character Max.</span>
+        <span class="charCount" name="charCount">Characters: ---</span>
         <textarea class="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
         
         <!-- * Prevent implicit submission of the form -->
@@ -127,6 +133,7 @@
     <div>
         <form id="mainThreadCommentForm" class="addCommentForm" action="/add+comment" method="POST" target="" onsubmit="return ;">
             <span class="invalid" name="invalid">Comment 115 character Max.</span>
+            <span class="charCount" name="charCount">Characters: ---</span>
             <textarea id="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
             
             <!-- * Prevent implicit submission of the form -->
@@ -219,6 +226,7 @@
             let textInputField = mainThreadCommentForm.children.namedItem('comment');
             let submitBtn = mainThreadCommentForm.children.namedItem('submit');
             let cancelBtn = mainThreadCommentForm.children.namedItem('cancel');
+            let charCountEle = mainThreadCommentForm.children.namedItem('charCount');
 
             submitBtn.onclick = function() {
                 let comment = textInputField.value;
@@ -227,6 +235,7 @@
 
             cancelBtn.onclick = function() {
                 setDefaultFormFields(mainThreadCommentForm);
+                textInputField.value = '';
             }
 
             textInputField.addEventListener( "focusin", () => {
@@ -242,6 +251,10 @@
             } );
 
             textInputField.addEventListener( "input", () => {
+
+                let charCount = textInputField.value.length;
+                charCountEle.innerHTML = 'Characters: ' + charCount;
+
                 if(!isInputValueCorrect(textInputField.value)) { 
                     setIncorrectInputField(mainThreadCommentForm);
                 } else {
@@ -254,6 +267,7 @@
         function createCommentForm(parentCommentId, btnElement) {
             let formTemplate = document.getElementById( 'commentFormTemplate' ).cloneNode(true);
                 formTemplate.id = '';
+            let charCountEle = formTemplate.children.namedItem('charCount');
             let textInputField = formTemplate.children.namedItem('comment');
             let submitBtn = formTemplate.children.namedItem('submit');
             let cancelBtn = formTemplate.children.namedItem('cancel');
@@ -265,21 +279,28 @@
 
             cancelBtn.onclick = function() {
                 setDefaultFormFields(formTemplate);
+                textInputField.value = '';
             }
 
             textInputField.addEventListener( "focusin", () => {
+
                 setDefaultFormFields(formTemplate);
             } );
 
             textInputField.addEventListener( "focusout", () => {
+
                 if(!isInputValueCorrect(textInputField.value)) { 
                     setIncorrectInputField(formTemplate);
                 } else {
-                    setDefaultFormFields(formTemplate)
+                    setDefaultFormFields(formTemplate);
                 }
             } );
 
             textInputField.addEventListener( "input", () => {
+
+                let charCount = textInputField.value.length;
+                charCountEle.innerHTML = 'Characters: ' + charCount;
+
                 if(!isInputValueCorrect(textInputField.value)) { 
                     setIncorrectInputField(formTemplate);
                 } else {
