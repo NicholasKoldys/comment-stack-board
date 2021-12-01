@@ -134,7 +134,7 @@
         <form id="mainThreadCommentForm" class="addCommentForm" action="/add+comment" method="POST" target="" onsubmit="return ;">
             <span class="invalid" name="invalid">Comment 115 character Max.</span>
             <span class="charCount" name="charCount">Characters: ---</span>
-            <textarea id="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
+            <textarea id="commentFormTextAreaInput" class="commentTextArea" name="comment" placeholder="Please write comment here."></textarea>
             
             <!-- * Prevent implicit submission of the form -->
             <button type="submit" disabled style="display: none" aria-hidden="true"></button>
@@ -195,9 +195,16 @@
             comX.onload = function (e) {
 
                 // * If Recieve OK - Proceed to home page.
-                if (this.status >= 200 && this.status <= 299) {
-                    setCorrectInputField(formEle);
-                    setDefaultFormFields(formEle);
+                if(this.status >= 200 && this.status <= 299) {
+
+                    if(this.response == 'Comment Too Long') {
+                        setIncorrectInputField(formEle);
+                    } else {
+                        setCorrectInputField(formEle);
+                        setDefaultFormFields(formEle);
+                        formEle.children.namedItem('comment').value = '';
+                        location.reload();// TODO TEMP REM until socket auto reload comment.
+                    }
                     return ;
                 }
 
@@ -405,6 +412,10 @@
             }
         }
 
+        function onPageLoad() {
+            document.getElementById('commentFormTextAreaInput').value = '';
+        }
+
         function handleElements() {
             revealAllAddCommentBtns();
             revealCollapsableThreads();
@@ -412,6 +423,7 @@
             applyThreadCollapseBtnOnclick();
             applyMainThreadBtnsOnClick();
             checkVisibleThreads();
+            onPageLoad();
         }
 
         var observer = new MutationObserver( (mut, obsInstance) => {
