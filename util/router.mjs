@@ -7,7 +7,7 @@ import { createECode, getEcodeWLoginNonce, deleteECode } from '../db/db-ecode.mj
 import { createNonce, renewNonce, deleteNonce } from '../db/db-nonce.mjs';
 import { createComment } from '../db/db-comments.mjs';
 import { createJWT, isJWTValid, parseJWT } from '../.private/secure/jwtokenizer.mjs';
-import { sterilizeBasicString, sterilizeEmail, sterilizeECode, sterlizeUrlCode } from '../.private/secure/sterilizer.mjs';
+import { sterilizeBasicString, sterilizeComment, sterilizeEmail, sterilizeECode, sterlizeUrlCode } from '../.private/secure/sterilizer.mjs';
 import { randomNumericString, randomCharString, hashNonce, checkHash } from '../.private/secure/code-generator.mjs';
 import { writeAuthorizationToken, sendMail } from './emailer.mjs';
 import { setValuesInHTML, getURLArg, getGoogleAuthCode, getClientCookieMap } from './common-parsers.mjs';
@@ -37,7 +37,7 @@ async function checkGetRoute(req, res) {
             debugLog(3, 'Entering get.request "/"');
             debugLog(7, 'Checking for JWT.');
             let cookieMap = getClientCookieMap(req.headers.cookie, [ 'Access-Token' ]);
-            if(cookieMap != null) {
+            if(Boolean(cookieMap)) {
                 if( isJWTValid( cookieMap.get('Access-Token'), false ) ) {
                     await processThreadPage(res, '/comments');
                     return ;
@@ -71,7 +71,7 @@ async function checkGetRoute(req, res) {
             let isCurrentlyValid = await isEmailAttemptValid(req.headers.cookie);
             if(isCurrentlyValid) {
                 // ? 302 : Redirect Found Resource
-                await forwardContent(302, res, Buffer.from('/confirm+email', 'utf-8'), 'text/plain',    
+                await forwardContent(302, res, null, 'text/plain',    
                     {
                         "Location" : "/confirm+email" // ? Must set location for redirect to work properly.
                     } );
@@ -148,14 +148,14 @@ async function checkPostRoute(req, res) {
         }
 
         if(req.url == '/add+comment') {
-            debugLog(3, 'Entering post.request "/add+comment"', req.socket.bytesRead);
+            debugLog(3, 'Entering post.request "/add+comment" | length = ', req.socket.bytesRead);
             // * Decline request if comment is too long
             if(req.socket.bytesRead > 891) { 
                 declineRoute(200, res, 'Comment Too Long');
                 return ;
             }
             let cookieMap = getClientCookieMap(req.headers.cookie, [ 'Access-Token' ]);
-            if(cookieMap != null) {
+            if(Boolean(cookieMap)) {
                 let jwtToken = parseJWT( cookieMap.get('Access-Token') );
                 if( isJWTValid( jwtToken, true ) ) {
                     let payload = JSON.parse( jwtToken.payload );
@@ -235,7 +235,7 @@ function forwardContent(status, response, outputContent, contentType, addHeaders
     try {
         response.statusCode = status;
 
-        if(outputContent == null || outputContent == '') {
+        if(!Boolean(outputContent)) {
             outputContent = Buffer.from('', 'utf-8');
         }
 
@@ -286,7 +286,7 @@ function sendClearedCookies(status, response) {
 async function isEmailAttemptValid(cookie) {
     try {
         let cookieMap = getClientCookieMap(cookie, ['Confirm-Nonce', 'Username', 'Attempt-Email']);
-        if(cookieMap == null) { throw 'Browser did not have proper cookie.'; }
+        if(!Boolean(cookieMap)) { throw 'Browser did not have proper cookie.'; }
 
         // TODO check exp dates?
         let isValid = await isLoginCreationValid( cookieMap.get('Username'), cookieMap.get('Attempt-Email') );
@@ -322,20 +322,21 @@ async function processLoginRoute(req, res) {
             //Optional syntax so string error doesnt cause issue.
             let testName = loginData.name?.replace(/"/g, '');
             let testPwd = loginData.pwd?.replace(/"/g, '');
-            if(testName == null || testPwd == null) { throw 'Un-Authorized'; }
+            if(!Boolean(testName) || !Boolean(testPwd)) { throw 'Un-Authorized'; }
             debugLog(6, 'Login recieved data: Name: ', testName, ' | Pwd: ', testPwd);
 
             let sterileName = sterilizeBasicString(testName);
             let sterilePwd = sterilizeBasicString(testPwd);
 
-            if(sterileName != testName || sterilePwd != testPwd || sterileName == '' || sterilePwd == '') {
+            if(sterileName != testName || sterilePwd != testPwd 
+                || !Boolean(sterileName) || !Boolean(sterilePwd)) {
                 debugLog(6, 'item did not pass standards: Name: ', testName, ' | Pwd: ', testPwd);
                 throw 'Un-Authorized';
             }
 
             let confirmedUser = await getConfirmedLogin(sterileName, sterilePwd);
             debugLog(3, 'Found confirmed email: ', confirmedUser ? true : false);
-            if(confirmedUser == null) { throw 'Un-Authorized'; }
+            if(!Boolean(confirmedUser)) { throw 'Un-Authorized'; }
             debugLog(6, "Confirmed User: ", confirmedUser.name)
 
             // confirmedUser = JSON.parse( confirmedUser );
@@ -391,13 +392,14 @@ async function processSignupRoute(req, res) {
             let sterileEmail = sterilizeEmail(testEmail);
             let sterilePwd = sterilizeBasicString(testPwd);
 
-            if(sterileName != testName || sterileEmail != testEmail || sterilePwd != testPwd || sterileName == '' | sterileEmail == '' || sterilePwd == '') {
+            if(sterileName != testName || sterileEmail != testEmail || sterilePwd != testPwd 
+                || !Boolean(sterileName) || !Boolean(sterileEmail) || !Boolean(sterilePwd)) {
                 throw 'Item did not pass standards.';
             }
 
             let loginId = Number.parseInt( await createLogin(sterileName, sterilePwd, sterileEmail) );
-            debugLog(7, 'Is login created: ', loginId, loginId != null ? true : false);
-            if(loginId == null) throw 'Login was not added.';
+            debugLog(7, `Is login created: ${loginId}, ${Boolean(loginId)}`);
+            if(!Boolean(loginId)) throw 'Login was not added.';
 
             let go = true;
             let it = 0;
@@ -405,25 +407,25 @@ async function processSignupRoute(req, res) {
             let ecodeId = 0;
             while(go) {
                 genECode = randomNumericString(8);
-                if(genECode == null) throw 'Failed to make randNumStr.';
+                if(!Boolean(genECode)) throw 'Failed to make randNumStr.';
 
                 // TODO show user waiting meter based on loading times
                 ecodeId = Number.parseInt( await createECode(genECode, loginId) );
-                if( (ecodeId != 0 && ecodeId != null) || it > 3) {
+                if(Boolean(ecodeId) || it > 3) {
                     go = false;
                 } else {
                     it++;
                 }
             }
-            if(ecodeId == 0 || ecodeId == null) throw 'Ecode was not added.';
+            if(!Boolean(ecodeId)) throw 'Ecode was not added.';
             debugLog(7, 'Code finally generated: ', genECode, ' after iterations: ', it);
 
             let genNonce = randomCharString(16);
-            if(genNonce == null) throw 'Nonce was not generated.';
+            if(!Boolean(genNonce)) throw 'Nonce was not generated.';
             let nonceExp = await createNonce(ecodeId, genNonce);
-            if(nonceExp == null) throw 'Nonce was not added.';
+            if(!Boolean(nonceExp)) throw 'Nonce was not added.';
             let publicNonce = hashNonce(genNonce, new Date(nonceExp).toISOString());
-            if(publicNonce == null) throw 'Hashing public nonce failed.';
+            if(!Boolean(publicNonce)) throw 'Hashing public nonce failed.';
 
             // * 5-day cookie
             let nameExp = new Date();
@@ -451,7 +453,7 @@ async function processSignupRoute(req, res) {
             });
             let result = await sendMail(sterileEmail, '☑️ Email Confirmation for Comment-Stack-Message', '', confirmationEmail);
             // TODO if fail send to queue for resending.
-            if(result == null) { throw 'Unable to send email to activate email'; }
+            if(!Boolean(result)) { throw 'Unable to send email to activate email'; }
             debugLog(7, 'Confirmation email has been: ', result.labelIds[0]);
 
         } catch (e) {
@@ -493,27 +495,27 @@ async function processConfirmEmailRoute(req, res) {
             // * 1 - A - Test Username
             let testName = cookieMap.get('Username');
             let sterileNameAttempt = sterilizeBasicString( testName );
-            if(testName != sterileNameAttempt || sterileNameAttempt == '') { throw 'Something went wrong.'; }
+            if(testName != sterileNameAttempt || !Boolean(sterileNameAttempt)) { throw 'Something went wrong.'; }
 
             // * 1 - B - Test Attempt-Email
             let testEmail = cookieMap.get('Attempt-Email');
             let sterileEmailAttempt = sterilizeEmail( testEmail );
-            if(testEmail != sterileEmailAttempt || sterileEmailAttempt == '') { throw 'Something went wrong.'; }
+            if(testEmail != sterileEmailAttempt || !Boolean(sterileEmailAttempt)) { throw 'Something went wrong.'; }
 
             // * 1 - C - Test Nonce
             let testNonce = cookieMap.get('Confirm-Nonce');
             let confirmNonce = sterilizeNonce( testNonce );
-            if(testNonce != confirmNonce || confirmNonce == '') { throw 'Something went wrong.'; }
+            if(testNonce != confirmNonce || !Boolean(confirmNonce)) { throw 'Something went wrong.'; }
 
             // * 2 - Test if code is properly formatted
             let testCode = JSON.stringify(postData.ecode).replace(/"/g, '');
             debugLog(6, 'E-Code confirmation recieved data: E-Code: ', testCode);
             let sterileEcode = sterilizeECode(testCode);
-            if(sterileEcode != testCode || sterileEcode == '') { throw 'Incorrect-Ecode'; }
+            if(sterileEcode != testCode || !Boolean(sterileEcode)) { throw 'Incorrect-Ecode'; }
 
             // * 3 - Use Ecode to retrieve link to Nonce and Login.
             let verifiedData = await getEcodeWLoginNonce( sterileEcode, sterileNameAttempt, sterileEmailAttempt );
-            if(verifiedData == null) { throw 'Incorrect-Ecode'; }
+            if(!Boolean(verifiedData)) { throw 'Incorrect-Ecode'; }
 
             // * 3 - ifExpired - Restart signup
             if(verifiedData.nonce_exp < Date.now()) {
@@ -576,7 +578,7 @@ async function processConfirmEmailRoute(req, res) {
 
                 let renewedNonce = renewNonce(e.ecode_id, randomCharString(16), extendedExp);
                 let publicNonce = hashNonce(renewedNonce.code, new Date(renewedNonce.exp).toISOString());
-                if(publicNonce == null) throw 'Hashing public nonce failed.'; */
+                if(!Boolean(publicNonce)) throw 'Hashing public nonce failed.'; */
 
                 //TODO TEMP DELETE , instead SEND NEW ECODE
                 await deleteLogin(e.login_id);
@@ -606,25 +608,22 @@ async function processCommentPost(req, res, userId) {
         try {
             debugLog(6, 'Recieved data: ', postData);
             let commentData = JSON.parse(postData);
-
             let testThreadId = commentData.thread_id;
-            if(testThreadId == 0) { testThreadId = null; } // * This statement is required as it is serverside conversion only.
+            if(!Boolean(testThreadId)) { testThreadId = null; } // * This statement is required as it is serverside conversion only.
 
             let testComment = commentData.comment;
-            if(testComment == '' || testComment == null) { throw 'comment is empty.'; }
+            if(!Boolean(testComment)) { throw 'Comment is empty.'; }
 
-            // TODO let sterileComment = sterlizeComment(testComment)
+            let sterileComment = sterilizeComment(testComment);
+            if(!Boolean(sterileComment)) { throw 'Comment does not meet standards.'; }
 
             debugLog(6, 'Attempting Comment Creation.');
 
-            // TODO change to sterilize comment + threadId
-            let isCommentCreated = await createComment(testComment, testThreadId, userId);
+            let isCommentCreated = await createComment(sterileComment, testThreadId, userId);
             debugLog(6, 'CommentCreated: ', isCommentCreated);
 
-            // TODO add comment to the page.
-            if(!isCommentCreated) {
-                throw 'Comment failed to be created.'
-            }
+            // TODO add comment to the page. With Map and 
+            if(!isCommentCreated) { throw 'Comment failed to be created.'; }
 
             // ? 200 : Ok
             return forwardContent(200, res, null, 'text/plain');
