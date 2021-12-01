@@ -265,7 +265,9 @@
                             signupXhr.onload = function (e) {
 
                                 if (this.status >= 200 && this.status <= 299) {
-                                    if(this.getResponseHeader('Location') != null && this.getResponseHeader('Location') != '') {
+                                    
+                                    if(Boolean(this.getResponseHeader('Location'))) {
+                                        
                                         if(this.getAllResponseHeaders().includes('email-attempt: ')) {
                                             let headerPortion = this.getAllResponseHeaders().split('email-attempt: ');
                                             let attemptEmail = headerPortion[1].substr(0, headerPortion[1].indexOf('\n'));
@@ -288,8 +290,7 @@
                                 if(this.status >= 400 && this.status <= 499) {
                                     console.log('Declined');
                                     incorrectFieldInput( 
-                                        document.getElementById('loginNameInput'),
-                                        document.getElementById('loginPwdInput')
+                                        nameI, pwdI, emailI
                                     );
                                     return ;
                                 }

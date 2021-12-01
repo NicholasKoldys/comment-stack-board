@@ -15,7 +15,8 @@ loadEnv().then( (result, rejection) => {
             debugLog(1, 'Application failed to load Database Connection. ', rejection);
             return ;
         }
-        (async () => {
+        
+        ( async () => {
             let isDBReady = await module.testDb();
             if(isDBReady) {
                 await setPepperEnv();
@@ -28,7 +29,8 @@ loadEnv().then( (result, rejection) => {
             debugLog(1, 'Application failed to load Database Connection. ', rejection);
             return ;
         }
-        (async () => {
+
+        ( async () => {
             await module.testMailer();
         })();
     });

@@ -50,7 +50,8 @@ export async function setPepperEnv() {
             values: []
         } );
         debugLog(3, 'Setting Pepper Env...');
-        if(query !== null) {
+        
+        if(Boolean(query)) {
             let pepper = query.rows[0];
             eval(`process.env.PEPPER = "${pepper[0]}";`);
             // eval('process.env.PEPPER = "' + pepper[0] + '";');

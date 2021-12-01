@@ -33,7 +33,7 @@ export function getURLArg(reqUrl) {
     try {
         let uriRight = reqUrl.split('?')[1];
     
-        if(uriRight == '') throw 'The url does not have arguements.';
+        if(!Boolean(uriRight)) throw 'The url does not have arguements.';
         
         let argList = uriRight.split('&');
         let argMap = new Map();
@@ -55,7 +55,7 @@ export function getURLArg(reqUrl) {
 export function getGoogleAuthCode(reqUrl) {
     try {
         let googleAuthCode = decodeURIComponent( getURLArg( reqUrl ).get('code') );
-        if( googleAuthCode = '' ) throw 'Google Auth Code is empty.';
+        if(!Boolean(googleAuthCode)) throw 'Google Auth Code is empty.';
 
         let sterileCode = sterlizeUrlCode(googleAuthCode);
         if(sterileCode != googleAuthCode) { throw 'Google Auth Code does not meet standards set by Google.'; }
@@ -74,11 +74,11 @@ export function getGoogleAuthCode(reqUrl) {
  */
 export function getClientCookieMap(reqCookie, chkValues) {
     try{ 
-        if(reqCookie == null || reqCookie == '') throw 'Cookie is empty.';
+        if(!Boolean(reqCookie)) throw 'Cookie is empty.';
         debugLog(6, 'Checking the cookie: ', reqCookie);
         let cookieMap = new Map();
     
-        for (const value of chkValues) {
+        for(const value of chkValues) {
             if(reqCookie.includes(value)) {
                 let key = value;
                 let firstValue = reqCookie.split(value + '=')[1].split(';');

@@ -250,7 +250,7 @@
 
                                 // * If Recieve OK - Proceed to home page.
                                 if (this.status >= 200 && this.status <= 299) {
-                                    if(this.getResponseHeader('Location') != '' && this.getResponseHeader('Location') != null) {
+                                    if(Boolean(this.getResponseHeader('Location'))) {
                                         window.location.assign(this.getResponseHeader('Location'));
                                     } else {
                                         window.location.assign('/');
