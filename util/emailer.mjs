@@ -2,7 +2,6 @@
 import fs from 'fs/promises';
 import { google } from 'googleapis';
 import { debugLog } from './logger.mjs';
-import { randomAsciiString, Base64UrlEncode } from '../.private/secure/code-generator.mjs';
 
 // ! In .ENV the REDIRECT_URI must be https://
 // ! REDIRECT_URI must be posted in Google Cloud API Console
@@ -19,10 +18,7 @@ const SCOPES = [
 
 
 /**
- * Create an OAuth2 client with the given credentials, and then execute the
- * given callback function.
- * @param {Object} credentials The authorization client credentials.
- * @param {function} callback The callback to call with the authorized client.
+ * Create an OAuth2 client with the saved or retrieved credentials.
  */
 async function getAuthorization() {
     try {
@@ -33,80 +29,81 @@ async function getAuthorization() {
         );
 
         let autheBuff = await fs.readFile(AUTHE_PATH);
-        let authEFile = JSON.parse(autheBuff);
+        let authEFile = JSON.parse(autheBuff.toString('utf-8'));
 
-        if (authEFile.access_token == '' || 
-            authEFile.access_token == undefined || 
-            authEFile.access_token == null) {
+        if(!Boolean(authEFile.access_token) || authEFile.expiry_date <= Date.now()) {
 
-                let authResult;
+            let authResult;
 
-                if(authEFile.expiry_date < Date.now()) {
-                    debugLog(3, 'Token Expired, generating new token...');
-                    authResult = await generateAccessToken(oAuth2Client, true);
-                } else {
-                    debugLog(3, 'Getting new token for authorization...');
-                    authResult = await generateAccessToken(oAuth2Client);
-                }
+            if(authEFile.expiry_date <= Date.now()) {
+                oAuth2Client.setCredentials(authEFile);
+                debugLog(3, 'Token Expired, generating new token...');
+                authResult = await generateAccessToken(oAuth2Client, true);
+            } else {
+                debugLog(3, 'Getting new token for authorization...');
+                authResult = await generateAccessToken(oAuth2Client);
+            }
 
-                if(authResult == null) { throw 'Auth Failed.'; }
-                debugLog(6, 'Auth Result: ', authResult);
-                return authResult
+            if(!Boolean(authResult)) { throw 'Auth Failed.'; }
+            debugLog(6, 'Auth Result: ', authResult.credentials);
+            return authResult;
 
         } else {
-            debugLog(7, 'Setting retrieved access_token file: ', authEFile);
             oAuth2Client.setCredentials(authEFile);
+            debugLog(7, 'AuthClient set credentials: ', oAuth2Client?.credentials);
             return oAuth2Client;
         }
     } catch (e) { debugLog(3, 'Reading Authorization Failed: ', e, ' | ', e.stack); }
 }
 
 /**
- * @param // {OAuth2Client} oAuth2Client
- * @param {Function} getAuthorizationCallback
+ * @param {google.auth.OAuth2} oAuth2Client
+ * @param {Boolean} isExpired
  */
 async function generateAccessToken(oAuth2Client, isExpired) {
     try {
         let authoBuff = await fs.readFile(AUTHO_PATH);
-        let authOFile = JSON.parse(authoBuff);
+        let authOFile = JSON.parse(authoBuff.toString('utf-8'));
 
-        if (authOFile.auth_token == '' || 
-            authOFile.auth_token == undefined || 
-            authOFile.auth_token == null) {
-                debugLog(6, 'Unable to authorize Gmailer automatically, see "Emailer.mjs", as authorization token is not set or needs te be reset for recent code changes. Please follow url and set it in the file ".private/authorization-token.json" ');
-                renewAuthorizationToken(oAuth2Client);
-                throw 'Must renew authorization.';
+        if(!Boolean(authOFile.auth_token)) {
+            debugLog(6, 'Unable to authorize Gmailer automatically, see "Emailer.mjs", as authorization token is not set or needs te be reset for recent code changes. Please follow url and set it in the file ".private/authorization-token.json" ');
+            renewAuthorizationToken(oAuth2Client);
+            throw 'Must renew authorization.';
         }
 
         let accessToken;
 
-        if (isExpired) {
+        if(isExpired) {
+            // ? Have the credentials set before attempting getAccessToken - as it utilizes the refresh token.
             accessToken = await oAuth2Client.getAccessToken();
-            if (accessToken == null) { throw 'Error retrieving access token.'; }
+            if(!Boolean(accessToken)) { throw 'Error retrieving access token.'; }
         } else {
             // ! to see the exact error use callback in function > (err) 
             accessToken = await oAuth2Client.getToken( authOFile.auth_token );
-            if (accessToken == null) { throw 'Error retrieving access token.'; }
+            if(!Boolean(accessToken)) { throw 'Error retrieving access token.'; }
         }
 
-        debugLog(3, 'Setting new Token.')
+        debugLog(3, 'Setting new Gmailer Token.');
 
-        debugLog(6, 'Token :: ', accessToken.tokens.access_token );
+        debugLog(6, 'Token :: ', accessToken?.res?.data?.access_token );
 
-        fs.writeFile(AUTHE_PATH, JSON.stringify(accessToken.tokens), (err) =>  {
-            debugLog(1, '', err);
-        });
-
-        debugLog(7, 'Writing generating access_token data: ', accessToken);
-        oAuth2Client.setCredentials(accessToken.tokens);
-        return oAuth2Client;
+        if(Boolean(accessToken?.res?.data?.access_token)) {
+            fs.writeFile(AUTHE_PATH, JSON.stringify(accessToken?.res?.data), (err) =>  {
+                debugLog(1, '', err);
+            });
+    
+            debugLog(7, 'Writing generating access_token data: ', accessToken.res.data);
+            oAuth2Client.setCredentials(accessToken.res.data);
+            return oAuth2Client;
+        } else {
+            throw 'Error retrieving access token.';
+        }
 
     } catch (e) { 
         debugLog(3, 'CRITCIAL! Issue with getting Token: ', e , ' | ', e.stack); 
         debugLog(6, 'Writing Empty Autho Token for review.');
         // Remove authorization token so server is forced to renew.
         writeAuthorizationToken('');
-        return null;
     }
 }
 
@@ -119,12 +116,12 @@ async function getGmailClient() {
         debugLog(6, 'Fetching GmailClient');
 
         let auth = await getAuthorization();
-        if(auth == null) { throw 'Failed to getAuthorization.'; }
+        if(!Boolean(auth)) { throw 'Failed to getAuthorization.'; }
 
         const gmail = google.gmail({version: 'v1', auth});
 
         let profile = await gmail.users.getProfile({ userId: process.env.GM_CLIENT_EMAIL });
-        if (profile == null) { throw 'The API returned an error.'; }
+        if (!Boolean(profile)) { throw 'The API returned an error.'; }
 
         return gmail.users;
 
@@ -147,14 +144,14 @@ async function getGmailClient() {
  */
 async function sendMail(recipient, emailDescription, emailContent, file) {
     try {
-        if(file) {
+        if(Boolean(file)) {
             emailContent = file;
-        } else if(recipient == '' || emailDescription == '' || emailContent == '') {
+        } else if(!Boolean(recipient) || !Boolean(emailDescription) || !Boolean(emailContent)) {
             throw 'Empty email content.';
         }
 
         const gClient = await getGmailClient();
-        if(gClient == null) { throw 'Failed to getGmailClient'; }
+        if(!Boolean(gClient)) { throw 'Failed to getGmailClient'; }
         
         const subject = emailDescription;
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
@@ -205,14 +202,9 @@ function writeAuthorizationToken(authoToken) {
 
     debugLog(6, 'Writing Authorization Token: ', jsonedToken);
     
-    dsxfs.writeFile(AUTHO_PATH, JSON.stringify(jsonedToken), (err) => {
+    fs.writeFile(AUTHO_PATH, JSON.stringify(jsonedToken), (err) => {
         debugLog(3, 'Failed Writing Autorization: ', err);
     });
-}
-
-async function generateCodeVerifier() {
-    let randC =  await randomAsciiString(69);
-    return await Base64UrlEncode(randC);
 }
 
 /**
@@ -224,10 +216,10 @@ async function testMailer() {
         debugLog(1, 'Testing Gmailer..');
 
         const gClient = await getGmailClient();
-        if(gClient == null) { throw 'Failed to getGmailClient'; }
+        if(!Boolean(gClient)) { throw 'Failed to getGmailClient'; }
 
         let profile = await gClient.getProfile({ userId: process.env.GM_CLIENT_EMAIL });
-        if (profile == null) { throw 'The API returned an error.'; }
+        if(!Boolean(profile)) { throw 'The API returned an error.'; }
 
         return debugLog(3, 'GMail Auth Profile: ', profile.data);
         
