@@ -10,4 +10,10 @@ COPY . .
 
 EXPOSE 3000
 
+ENV NODE_ENV=production
+
+# RUN addgroup -S basicgroup && adduser -S basicuser -G basicgroup
+
+# USER basicuser
+
 CMD [ "npm", "start" ]

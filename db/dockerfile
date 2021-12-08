@@ -11,4 +11,8 @@ EXPOSE 5432
 
 COPY ./.dump/202112_dump.sql /docker-entrypoint-initdb.d/dump.sql
 
+# RUN addgroup -S basicgroup && adduser -S basicuser -G basicgroup
+
+# USER basicuser
+
 #docker run -d -v data_csm-persist:/var/lib/postgresql/data csm-pgdb
