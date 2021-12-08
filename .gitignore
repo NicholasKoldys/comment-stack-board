@@ -107,7 +107,7 @@ dist
 .private/
 .db.txt
 .test
-db/
+db/.dump/
 
 # NON-Push Test File
 NPTEST*

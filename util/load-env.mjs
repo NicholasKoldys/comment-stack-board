@@ -17,8 +17,10 @@ export default async function loadEnv() {
         const lines = envContents.split(/\r?\n/);
         debugLog(3, 'Setting Env Variables...');
         lines.forEach((dataLine) => {
-            let strArr = dataLine.split('=');
-            eval('process.env.' + strArr[0] + ' = '+ strArr[1] + ';');
+            if(!dataLine.startsWith('#')) {
+                let strArr = dataLine.split('=');
+                eval('process.env.' + strArr[0] + ' = '+ strArr[1] + ';');
+            }
         });
     } catch (e) {
         debugLog(6, '', e, e.stack);
