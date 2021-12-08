@@ -12,14 +12,13 @@
         "port": "3000"
     },
     "scripts": {
-        "start": "node index.mjs"
+        "start": "node ./index.mjs"
     },
-    "dependencies": {},
     "bundledDependencies": [],
-    "devDependencies": {
-        "googleapis": "^88.2.0",
-        "pg": "^8.7.1"
-    },
     "main": "index.mjs",
-    "private": true
+    "private": true,
+    "dependencies": {
+        "googleapis": "^92.0.0",
+        "pg": "^8.7.1"
+    }
 }
