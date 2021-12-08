@@ -12,24 +12,29 @@ const options = {
     cert: fs.readFileSync("./.private/cert.pem")
 };
 
+export var blackList = [ ];
+
 const server = https.createServer(options);
 
 server.on('request', (req, res) => {
 
-    // TODO only allow site main origin
-    /* if(req.headers.origin !== process.env.FULL_ORIGIN || req.headers.origin !== 'https://localhost:3000') {
-        debugLog(3, 'Recieved request from Invalid Origin: ', req.headers.origin)
-        return res.writeHead(418).end();
-    } */
+    var ip = req?.ip 
+            || req?.connection?.remoteAddress 
+            || req?.socket?.remoteAddress 
+            || req?.connection?.socket?.remoteAddress;
+
+    if(blackList.indexOf(ip) > -1) {
+        return res.end();
+    }
 
     if(req.method === 'GET') {
         debugLog(3, 'Recieved GET req..');
-        checkGetRoute(req, res);
+        return checkGetRoute(req, res);
     }
 
     if(req.method === 'POST') {
         debugLog(3, 'Recieved POST req..');
-        checkPostRoute(req, res);
+        return checkPostRoute(req, res);
     }
 });
 

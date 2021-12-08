@@ -1,5 +1,5 @@
 'use strict';
-import { IncomingMessage, ServerResponse } from 'http';
+import { ClientRequest, IncomingMessage, request, ServerResponse } from 'http';
 import fs from 'fs/promises';
 import { debugLog } from './logger.mjs';
 import { isLoginCreationValid, createLogin, getConfirmedLogin, updateLoginConfirmed } from '../db/db-login.mjs';
@@ -13,6 +13,7 @@ import { writeAuthorizationToken, sendMail } from './emailer.mjs';
 import { setValuesInHTML, getURLArg, getGoogleAuthCode, getClientCookieMap } from './common-parsers.mjs';
 import { exportCommentPage } from '../.private//controller/comment-controller.mjs';
 import { sterilizeNonce } from '../.private/secure/sterilizer.mjs';
+import { blackList } from './server.mjs';
 
 const fileLocationMap = new Map( [
     [ '/', [ './public/view/index.html', "text/html" ] ],
@@ -20,6 +21,8 @@ const fileLocationMap = new Map( [
     [ '/signup', [ './public/view/signup.html', "text/html"] ],
     [ '/confirm+email', [ './public/view/email-confirmation.html', "text/html"] ],
     [ '/comments', [ './public/view/commenting.html', "text/html" ] ],
+    [ '/404', [ './public/view/404.html', "text/html" ] ],
+    [ '/401', [ './public/view/oops.html', "text/html" ] ],
     [ '/css/style.css', [ './public/resources/css/style.css', "text/css" ] ],
     [ '/js/javascript.js', [ './public/resources/js/javascript.js', "application/javascript" ] ],
     [ '/favicon.ico', [ './public/resources/images/comment-stack-fav.svg', "image/svg+xml" ] ],
@@ -32,6 +35,8 @@ const fileLocationMap = new Map( [
  */
 async function checkGetRoute(req, res) {
     try {
+
+        debugLog(7, req?.socket?.remoteAddress);
 
         if(req.url === '/') {
             debugLog(3, 'Entering get.request "/"');
@@ -164,7 +169,7 @@ async function checkPostRoute(req, res) {
                 }
             }
             // ? 401 : Un-Authorized Access
-            return declineRoute(401, res, "Un-authorized Access.");
+            return declineRoute(401, res, 'Un-Authorized');
 
         } else {
             // TODO write unrecognized post to log.
@@ -175,7 +180,43 @@ async function checkPostRoute(req, res) {
     } catch (e) {
         debugLog(3, 'Check POST Route Failed: ', e, ' | ', e.stack);
         // ? 400 : Bad Request
-        return declineRoute(400, res, "Bad Request");
+        return declineRoute(400, res, "Bad Request", req);
+    }
+}
+
+/**
+ * 
+ * @param {Number} status 
+ * @param {ServerResponse} response 
+ * @param {Buffer} outputContent
+ * @param {String} contentType
+ * @param {Object<header, value>} [addHeaders]
+ * @returns status, content, and contentType with included optional headers to client
+ */
+function forwardContent(status, response, outputContent, contentType, addHeaders) {
+
+    try {
+        response.statusCode = status;
+
+        if(!Boolean(outputContent)) {
+            outputContent = Buffer.from('', 'utf-8');
+        }
+
+        response.setHeader("Content-Length", Buffer.byteLength(outputContent));
+        response.setHeader("Content-Type",  contentType);
+
+        if( addHeaders ) {
+            // TODO figure out why (let [hdr, val] in addHeaders) wont work without Object.entries.
+            for(let [hdr, val] of Object.entries(addHeaders)) {
+                response.setHeader(hdr, val);
+            }
+        }
+
+        return response.end(outputContent);
+        
+    } catch(e) { 
+        debugLog(7, 'Failed to ForwardContent: ', e, ' | ', e.stack);
+        response.end();
     }
 }
 
@@ -223,45 +264,33 @@ async function getDynamicCommentPage(status, route, response, asyncContentFetch,
 
 /**
  * 
- * @param {Number} status 
- * @param {ServerResponse} response 
- * @param {Buffer} outputContent
- * @param {String} contentType
- * @param {Object<header, value>} [addHeaders]
- * @returns status, content, and contentType with included optional headers to client
- */
-function forwardContent(status, response, outputContent, contentType, addHeaders) {
-
-    try {
-        response.statusCode = status;
-
-        if(!Boolean(outputContent)) {
-            outputContent = Buffer.from('', 'utf-8');
-        }
-
-        response.setHeader("Content-Length", Buffer.byteLength(outputContent));
-        response.setHeader("Content-Type",  contentType);
-
-        if( addHeaders ) {
-            // TODO figure out why (let [hdr, val] in addHeaders) wont work without Object.entries.
-            for(let [hdr, val] of Object.entries(addHeaders)) {
-                response.setHeader(hdr, val);
-            }
-        }
-
-        return response.end(outputContent);
-        
-    } catch(e) { debugLog(7, 'Failed to ForwardContent: ', e, ' | ', e.stack); }
-}
-
-/**
- * 
  * @param status 
  * @param response 
  * @param message 
+ * @param {ClientRequest} [request]
  * @returns utf-8 buffered message, text/plain content type to client
  */
-async function declineRoute(status, response, message) {
+async function declineRoute(status, response, message, request) {
+
+    if(status == 400) {
+        // * User attempted to circumvent post request.
+        // TODO log IP and block if reoccur.
+
+        var ip = request?.ip 
+            || request?.connection?.remoteAddress 
+            || request?.socket?.remoteAddress 
+            || request?.connection?.socket?.remoteAddress;
+
+        blackList.push(ip);
+        return getStaticPage(status, '/401', response);
+    }
+    if(status == 401) {
+        return getStaticPage(status, '/401', response);
+    }
+    if(status == 404) {
+        return getStaticPage(status, '/404', response);
+    }
+
     return forwardContent(status, response, Buffer.from(message, 'utf-8'), 'text/plain');
 }
 
@@ -356,11 +385,12 @@ async function processLoginRoute(req, res) {
 
         } catch (e) {
             debugLog(3, 'Login Failed: ', e, ' | ', e.stack);
-            // * Un-Authorized is a common 
+            // * Un-Authorized is common 
             if(e == 'Un-Authorized') {
-                // return declineRoute( 401, res, 'Un-Authorized' );
                 return declineRoute( 401, res, '' );
             }
+            debugLog(3, 'Unable to process the request: ');
+            console.error(req);
             return declineRoute( 500, res, 'Backend Error' );
         }
     });
@@ -458,8 +488,8 @@ async function processSignupRoute(req, res) {
 
         } catch (e) {
             debugLog(3, 'SignUp Failed: ', e, ' | ', e.stack);
-            // ? 400 : Bad Request
-            return declineRoute(400, res, 'Name, Email, Password cannot be accepted.');
+            // ? 406 : Not Acceptable - Content does not match server specified algorithm.
+            return declineRoute(406, res, 'Name, Email, Password cannot be accepted.');
         }
     });
 }
@@ -562,12 +592,11 @@ async function processConfirmEmailRoute(req, res) {
                 // return declineRoute(404, res, '');
                 // TODO TEMP 404
                 return sendClearedCookies(404, res);
-                // return declineRoute(400, res, '');
             }
             if(e.message == 'Incorrect-Ecode') {
                 // * Allow client to retry
-                // ? 400 : Bad Request
-                return declineRoute(400, res, '');
+                // ? 406 : Not Acceptable
+                return declineRoute(406, res, '');
             }
             if(typeof e == ExpiredNonceException) {
                 // TODO redo sign-up process and resend confirmation email and mark resend exp on ammount of emails sent.
@@ -617,7 +646,7 @@ async function processCommentPost(req, res, userId) {
             let sterileComment = sterilizeComment(testComment);
             if(!Boolean(sterileComment)) { throw 'Comment does not meet standards.'; }
 
-            debugLog(6, 'Attempting Comment Creation.');
+            debugLog(3, 'Attempting Comment Creation.');
 
             let isCommentCreated = await createComment(sterileComment, testThreadId, userId);
             debugLog(6, 'CommentCreated: ', isCommentCreated);
@@ -630,7 +659,8 @@ async function processCommentPost(req, res, userId) {
 
         } catch (e) {
             debugLog(3, 'Comment Process Failed: ', e, ' | ', e.stack);
-            return declineRoute(400, res, 'CommentFailed.')
+            // ? 406 - Not Acceptable
+            return declineRoute(406, res, 'CommentFailed.')
         }
     });
 }
