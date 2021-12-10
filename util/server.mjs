@@ -8,8 +8,8 @@ const HOSTNAME = process.env.HOSTNAME || "127.0.0.1";
 const PORT = process.env.PORT || 3000;
 
 const options = {
-    key: fs.readFileSync("./.private/key.pem"),
-    cert: fs.readFileSync("./.private/cert.pem")
+    key: fs.readFileSync("./.private/ssl-self-cert/key.pem"),
+    cert: fs.readFileSync("./.private/ssl-self-cert/cert.pem")
 };
 
 export var blackList = [ ];

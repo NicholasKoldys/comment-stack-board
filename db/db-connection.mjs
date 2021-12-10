@@ -6,10 +6,10 @@ import { debugLog } from '../util/logger.mjs';
 // ! Make sure the DB is correct or all table queries will require edditing.
 const pool = new postgres.Pool({
     user: process.env.PGUSER,
-    host: process.env.PGHOST,
+    host: process.env.PGHOST | "localhost",
     database: process.env.PGDATABASE,
     password: process.env.PGPASSWORD,
-    port: process.env.PGPORT,
+    port: process.env.PGPORT | 5432,
     max: 4,
     idleTimeoutMillis: 2000,
     connectionTimeoutMillis: 5000,
