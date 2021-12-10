@@ -1,0 +1,352 @@
+/* 
+-------------------------------------------------------------------- 
+----------------     Global Element Style     ----------------------
+--------------------------------------------------------------------
+*/
+
+:root {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+h1 {
+    text-align: center;
+    font-size: 3ch;
+}
+h2 {
+    text-align: center;
+    font-size: 6ch;
+}
+a {
+    font-weight: bolder;
+    font-size: 1.8ch;
+}
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10vh;
+}
+.center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 75vw;
+    padding: 5ch;
+    background-color: #b3b3b370;
+}
+.text-box {
+    width: 75%;
+    padding: 5ch;
+    background-color: #b3b3b3b7;
+}
+.incorrectNotifier {
+    display: block;
+    text-align: center;
+    font-size: 2ch;
+    font-weight: bolder;
+    margin: 1ch;
+    padding: 2ch;
+    background-color: #ff6f6f;
+}
+.promptAble {
+    display: block;
+    text-align: center;
+    font-size: 2ch;
+    font-weight: bolder;
+    margin: 1ch;
+    padding: 2ch;
+}
+input.correctContent {
+    background-color: #59a659;
+}
+input.incorrectContent {
+    background-color: #ff6f6f;
+}
+button {
+    text-align: center;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+}
+button.submitBtn {
+    font-size: 2ch;
+    border: .3ch solid green;
+    background-color: rgb(105, 156, 105);
+}
+button.submitBtn:hover {
+    background-color: rgb(0, 160, 0);
+    color: white;
+}
+button.cancelBtn {
+    font-size: 2ch;
+}
+
+p.finalDescription {
+    text-align: center;
+    width: 100%;
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------        Display Changing      ----------------------
+--------------------------------------------------------------------
+*/
+
+.hidden {
+    display: none !important;
+}
+.stop-scrolling {
+    height: 100%;
+    overflow: hidden;
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------          Main Threead        ----------------------
+--------------------------------------------------------------------
+*/
+
+div#loginPrompt {
+    position: absolute;
+    z-index: 2;
+    top: 25vh;
+    right: 10%;
+    bottom: auto;
+    left: 10%;
+    background-color: darkgray;
+}
+div#fullPageShade {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 100vh;
+    width: 100vw;
+    background-color: black;
+    opacity: .75;
+}
+ul#main-thread {
+    padding: 0;
+}
+li.thread {
+    list-style-type: none;
+}
+/* li.thread > ul.threadList {
+} */
+ul.threadList > li.comment {
+    list-style-type: none;
+    word-wrap: break-word;
+    width: 38ch;
+}
+li.comment > ul.newThread {
+    padding: 0;
+}
+li.comment > button { 
+    margin-bottom: 1ch;
+    padding: 1ch;
+}
+li.comment > div.commentBox {
+    margin-bottom: 1ch;
+    padding: 1ch;
+    background-color: rgb(192, 192, 192);
+}
+li.comment > div.commentBox > p:first-child {
+    font-size: 2ch;
+    font-weight: bold;
+}
+button.show-thread {
+    background-color: rgb(105, 156, 105);
+}
+button.hide-thread {
+    background-color: rgb(170, 170, 170);
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------       Add Comment Form       ----------------------
+--------------------------------------------------------------------
+*/
+
+form.addCommentForm {
+    display: grid;
+    grid-template-areas:
+        "inv inv inv"
+        "cou cou cou"
+        "tex tex tex"
+        "con con con"
+        "sub sub can"
+    ;
+    width: 38ch;
+    margin: 2ch;
+}
+form.addCommentForm > textarea {
+    grid-area: tex;
+}
+form.addCommentForm > span.confirmation {
+    grid-area: con;
+    visibility: hidden;
+}
+form.addCommentForm > span.invalid {
+    grid-area: inv;
+    font-size: 1.7ch;
+    font-weight: bold;
+    color: red;
+    visibility: hidden;
+}
+form.addCommentForm > span.charCount {
+    grid-area: cou;
+}
+form.addCommentForm > button {
+    margin-bottom: 1ch;
+    margin-right: 1ch;
+    padding: 1ch;
+}
+form.addCommentForm > button.submitBtn {
+    grid-area: sub;
+}
+form.addCommentForm > button.cancelBtn {
+    grid-area: can;
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------     Login Page & Prompt      ----------------------
+--------------------------------------------------------------------
+*/
+
+form#login {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(7ch, 1fr)) repeat(2, 3fr) minmax(7ch, 2fr);
+    grid-template-rows: repeat(2, minmax(2ch, auto)) minmax(2ch, 2fr) minmax(6ch, auto);
+    column-gap: 1ch;
+    row-gap: 1ch;
+    grid-template-areas: 
+    "l1 l1 i1 i1 ."
+    "l2 l2 i2 i2 ."
+    ". . . . ."
+    "su su su su cl"
+    ;
+}
+form#login > label {
+    text-align: right;
+    padding: 1ch;
+}
+label#loginNameLabel {
+    grid-area: l1;
+}
+label#loginPwdLabel {
+    grid-area: l2;
+}
+form#login > input {
+    padding-left: 3ch;
+}
+input#loginNameInput {
+    grid-area: i1;
+}
+input#loginPwdInput {
+    grid-area: i2;
+}
+button#loginSubmitBtn {
+    grid-area: su;
+}
+button#loginCancelBtn {
+    grid-area: cl;
+}
+form#login > div > span { /* * incorrect notifier */
+    position: absolute;
+    padding: 1ch;
+    color: white;
+    font-weight: bold;
+    background-color: #ff6f6f;
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------          Confirm Page        ----------------------
+--------------------------------------------------------------------
+*/
+
+form#eConfirm {
+    display: flex;
+    flex-direction: column;
+}
+form#eConfirm > input {
+    text-align: center;
+    font-size: 2ch;
+    margin: 1ch;
+    padding: 2ch;
+}
+form#eConfirm > .submitBtn {
+    margin: 1ch;
+    padding: 2ch;
+}
+
+
+
+/* 
+-------------------------------------------------------------------- 
+----------------          Signup Page         ----------------------
+--------------------------------------------------------------------
+*/
+
+form#signup {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(7ch, 1fr)) repeat(2, 3fr) minmax(7ch, 2fr);
+    grid-template-rows: repeat(3, minmax(2ch, auto)) minmax(2ch, 2fr) minmax(6ch, auto);
+    column-gap: 1ch;
+    row-gap: 1ch;
+    grid-template-areas: 
+    "l1 l1 i1 i1 ."
+    "l2 l2 i2 i2 ."
+    "l3 l3 i3 i3 ."
+    ". . . . ."
+    "su su su su cl"
+    ;
+}
+form#signup > label {
+    text-align: right;
+    padding: 1ch;
+}
+label#nameLabel {
+    grid-area: l1;
+}
+label#emailLabel {
+    grid-area: l2;
+}
+label#pwdLabel {
+    grid-area: l3;
+}
+form#signup > input {
+    padding-left: 3ch;
+}
+input#signUpNameInput {
+    grid-area: i1;
+}
+input#signUpMailInput {
+    grid-area: i2;
+}
+input#signUpPwdInput {
+    grid-area: i3;
+}
+button#signupSubmitBtn {
+    grid-area: su;
+}
+button#signupCancelBtn {
+    grid-area: cl;
+}
+
+
