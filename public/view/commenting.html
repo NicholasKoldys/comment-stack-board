@@ -4,106 +4,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMENT-STACK-MESSAGE-BOARD - HOME</title>
-
-    <style>
-        :root {
-            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 5vh;
-        }
-        .center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            /* width: 75vw; */
-            padding: 5ch;
-            background-color: #b3b3b370;
-        }
-        /* #mainThreadCommentForm {
-        } */
-        /* ul#main-thread {
-        } */
-        li.thread {
-            list-style-type: none;
-        }
-        /* li.thread > ul.threadList {
-        } */
-        ul.threadList > li.comment {
-            list-style-type: none;
-            word-wrap: break-word;
-            width: 38ch;
-        }
-        /* li.comment > ul.newThread {
-        } */
-        li.comment > button { 
-            margin-bottom: 1ch;
-            margin-right: 1ch;
-            padding: 1ch;
-        }
-        li.comment > div.commentBox {
-            margin-bottom: 1ch;
-            padding: 1ch;
-            background-color: grey;
-        }
-        form.addCommentForm {
-            display: grid;
-            grid-template-areas:
-                "inv inv inv"
-                "cou cou cou"
-                "tex tex tex"
-                "con con con"
-                "sub sub can"
-            ;
-            width: 38ch;
-            margin: 2ch;
-        }
-        form.addCommentForm > textarea {
-            grid-area: tex;
-        }
-        form.addCommentForm > span.confirmation {
-            grid-area: con;
-            visibility: hidden;
-        }
-        form.addCommentForm > span.invalid {
-            grid-area: inv;
-            color: red;
-            visibility: hidden;
-        }
-        form.addCommentForm > span.charCount {
-            grid-area: cou;
-            /* visibility: hidden; */
-        }
-        form.addCommentForm > button {
-            margin-bottom: 1ch;
-            margin-right: 1ch;
-            padding: 1ch;
-        }
-        form.addCommentForm > button.submitBtn {
-            grid-area: sub;
-        }
-        form.addCommentForm > button.cancelBtn {
-            grid-area: can;
-        }
-        .hidden {
-            display: none !important;
-        }
-        .show-thread {
-            background-color: green;
-        }
-        .hide-thread {
-            background-color: #b3b3b370;
-        }
-    </style>
+    <title>COMMENT-STACK-BOARD - HOME</title>
+    <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
-
 
     <header>
         <a href="/"><button id="homeBtn">Home</button></a>
@@ -126,7 +30,7 @@
 
     <div class="container">
         <div class="center">
-            <h1>COMMENT-STACK-MESSAGE-BOARD</h1>
+            <h1>COMMENT-STACK-BOARD</h1>
         </div>
     </div>
 
@@ -150,8 +54,8 @@
 
     <script>
 
-        function isInputValueCorrect(value) {
-            if(value.length <= 115 && value.length > 0) {
+        function isInputConditionMet(element) {
+            if(element.value.length <= 115 && element.value.length > 0) {
                 return true;
             }
             return false;
@@ -159,32 +63,36 @@
 
         function setDefaultFormFields(commentForm) {
             let commentInput = commentForm.children.namedItem('comment');
-                commentInput.style.backgroundColor = '';
+                commentInput.classList.remove('correctContent');
+                commentInput.classList.remove('incorrectContent');
             let confirmationEle = commentForm.children.namedItem('confirmation');
                 confirmationEle.style.visibility = 'hidden';
             let invalidEle = commentForm.children.namedItem('invalid');
                 invalidEle.style.visibility = 'hidden';
         }
 
-        function setCorrectInputField(commentForm) {
+        function setCorrectFormFields(commentForm) {
             let confirmationEle = commentForm.children.namedItem('confirmation');
                 confirmationEle.style.visibility = 'visible';
         }
 
-        function setIncorrectInputField(commentForm) {
+        function setIncorrectFormFields(commentForm) {
             let commentInput = commentForm.children.namedItem('comment');
-                commentInput.style.backgroundColor = '#ff6f6f';
+                commentInput.classList.remove('correctContent');
+                commentInput.classList.add('incorrectContent');
             let invalidEle = commentForm.children.namedItem('invalid');
                 invalidEle.style.visibility = 'visible';
         }
 
-        function sendComment(formEle, threadId, commentValue ) {
+        function sendComment(formEle, threadId, commentField ) {
 
-            if(!isInputValueCorrect(commentValue)) { return setIncorrectInputField(formEle); }
+            if(!isInputConditionMet(commentField)) {
+                return setIncorrectFormFields(formEle);
+            }
 
             let commentObj = {
                 thread_id : threadId,
-                comment : commentValue
+                comment : commentField.value
             };
 
             let comX = new XMLHttpRequest();
@@ -198,9 +106,9 @@
                 if(this.status >= 200 && this.status <= 299) {
 
                     if(this.response == 'Comment Too Long') {
-                        setIncorrectInputField(formEle);
+                        setIncorrectFormFields(formEle);
                     } else {
-                        setCorrectInputField(formEle);
+                        setCorrectFormFields(formEle);
                         setDefaultFormFields(formEle);
                         formEle.children.namedItem('comment').value = '';
                         location.reload();// TODO TEMP REM until socket auto reload comment.
@@ -213,7 +121,7 @@
                 } */
 
                 if(this.status >= 400 && this.status <= 499) {
-                    setIncorrectInputField(formEle);
+                    setIncorrectFormFields(formEle);
                     return ;
                 }
 
@@ -236,8 +144,7 @@
             let charCountEle = mainThreadCommentForm.children.namedItem('charCount');
 
             submitBtn.onclick = function() {
-                let comment = textInputField.value;
-                sendComment( mainThreadCommentForm, threadId, comment );
+                sendComment( mainThreadCommentForm, threadId, textInputField );
             }
 
             cancelBtn.onclick = function() {
@@ -250,8 +157,8 @@
             } );
 
             textInputField.addEventListener( "focusout", () => {
-                if(!isInputValueCorrect(textInputField.value)) { 
-                    setIncorrectInputField(mainThreadCommentForm);
+                if(!isInputConditionMet(textInputField)) { 
+                    setIncorrectFormFields(mainThreadCommentForm);
                 } else {
                     setDefaultFormFields(mainThreadCommentForm);
                 }
@@ -262,8 +169,8 @@
                 let charCount = textInputField.value.length;
                 charCountEle.innerHTML = 'Characters: ' + charCount;
 
-                if(!isInputValueCorrect(textInputField.value)) { 
-                    setIncorrectInputField(mainThreadCommentForm);
+                if(!isInputConditionMet(textInputField)) { 
+                    setIncorrectFormFields(mainThreadCommentForm);
                 } else {
                     setDefaultFormFields(mainThreadCommentForm);
                 }
@@ -280,8 +187,7 @@
             let cancelBtn = formTemplate.children.namedItem('cancel');
                                 
             submitBtn.onclick = function() {
-                let comment = textInputField.value;
-                sendComment( formTemplate, parentCommentId, comment );
+                sendComment( formTemplate, parentCommentId, textInputField );
             }
 
             cancelBtn.onclick = function() {
@@ -296,8 +202,8 @@
 
             textInputField.addEventListener( "focusout", () => {
 
-                if(!isInputValueCorrect(textInputField.value)) { 
-                    setIncorrectInputField(formTemplate);
+                if(!isInputConditionMet(textInputField)) { 
+                    setIncorrectFormFields(formTemplate);
                 } else {
                     setDefaultFormFields(formTemplate);
                 }
@@ -308,8 +214,8 @@
                 let charCount = textInputField.value.length;
                 charCountEle.innerHTML = 'Characters: ' + charCount;
 
-                if(!isInputValueCorrect(textInputField.value)) { 
-                    setIncorrectInputField(formTemplate);
+                if(!isInputConditionMet(textInputField)) { 
+                    setIncorrectFormFields(formTemplate);
                 } else {
                     setDefaultFormFields(formTemplate)
                 }

@@ -4,168 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMENT-STACK-MESSAGE-BOARD - HOME - Please signup or login to access more content!</title>
-
-    <style>
-        :root {
-            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 5vh;
-        }
-        .center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            /* width: 75vw; */
-            padding: 5ch;
-            background-color: #b3b3b370;
-        }
-        #loginPrompt {
-            /* display: flex;
-            flex-direction: column; */
-            position: absolute;
-            z-index: 2;
-            top: 25vh;
-            right: 10%;
-            bottom: auto;
-            left: 10%;
-            background-color: darkgray;
-        }
-        #loginForm {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(7ch, 1fr)) repeat(2, 3fr) minmax(7ch, 2fr);
-            grid-template-rows: repeat(3, minmax(2ch, auto)) minmax(2ch, 2fr) minmax(6ch, auto);
-            column-gap: 1ch;
-            row-gap: 1ch;
-            grid-template-areas: 
-            "ln ln in in ."
-            "lp lp ip ip ."
-            ". . . . ."
-            "su su su cl cl"
-            "ex ex ex ex ex"
-            ;
-            width: 100%;
-        }
-        form#loginForm > label {
-            display: flex;
-            justify-content: right;
-            align-items: center;
-            /* text-align: right; */
-            padding: 1ch;
-        }
-        #loginNameLabel {
-            grid-area: ln;
-        }
-        #loginPwdLabel {
-            grid-area: lp;
-        }
-        form#loginForm > input {
-            padding-left: 3ch;
-        }
-        #loginNameInput {
-            grid-area: in;
-        }
-        #loginPwdInput {
-            grid-area: ip;
-        }
-        #nameTab {
-            position: absolute;
-            padding: 1ch;
-            color: white;
-            font-weight: bold;
-            background-color: #ff6f6f;
-        }
-        #pwdTab {
-            position: absolute;
-            padding: 1ch;
-            color: white;
-            font-weight: bold;
-            background-color: #ff6f6f;
-        }
-        form#loginForm > button {
-            padding: 2ch;
-            font-size: 1.7ch;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #loginSubmitBtn {
-            grid-area: su;
-            border: .3ch solid black;
-            border-radius: .5ch;
-            background-color: rgb(105, 156, 105);
-        }
-        #loginSubmitBtn:hover {
-            border-color: white;
-            background-color: rgb(0, 160, 0);
-        }
-        #loginCancelBtn {
-            grid-area: cl;
-        }
-        #loginCancelBtn:hover {
-            border: darkgray;
-            background-color: gray;
-        }
-        #loginExplaination {
-            grid-area: ex;
-            text-align: center;
-        }
-        #threadContainer {
-            position: absolute;
-            z-index: 1;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-            height: 100vh;
-            width: 100vw;
-        }
-        /* ul#main-thread {
-        } */
-        li.thread {
-            list-style-type: none;
-        }
-        /* li.thread > ul.threadList {
-        } */
-        ul.threadList > li.comment {
-            list-style-type: none;
-            word-wrap: break-word;
-            width: 38ch;
-        }
-        /* li.comment > ul.newThread {
-        } */
-        li.comment > button { 
-            margin-bottom: 1ch;
-            padding: 1ch;
-        }
-        li.comment > div.commentBox {
-            margin-bottom: 1ch;
-            padding: 1ch;
-            background-color: grey;
-        }
-        .hidden {
-            display: none !important;/* Allows toggleing with shown-flex as default */
-        }
-        .greyed-out {
-            background-color: black;
-            opacity: .75;
-        }
-        .show-thread {
-            background-color: green;
-        }
-        .hide-thread {
-            background-color: grey;
-        }
-        .stop-scrolling {
-            height: 100%;
-            overflow: hidden;
-        }
-    </style>
+    <title>COMMENT-STACK-BOARD - HOME - Please signup or login to access more content!</title>
+    <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
 
@@ -175,30 +15,28 @@
         <a href="/signup"><button>Sign-up</button></a>
     </header>
 
-    <div id="loginPrompt" class="hidden">
-        <div class="center">
-            <form id="loginForm" action="/login" method="POST">
-                <label id="loginNameLabel" for="name">Name:</label>
-                <input id="loginNameInput" type="text" name="name" required placeholder="display name"/>
-                    <div><span id="nameTab" class="hidden">Incorrect Name</span></div>
-                <label id="loginPwdLabel" for="pwd">Password:</label>
-                <input id="loginPwdInput" type="password" name="pwd" required placeholder="********"/>
-                    <div><span id="pwdTab" class="hidden">Incorrect Password</span></div>
-                <!-- Prevent implicit submission of the form -->
-                <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-                <!-- Use this submit button because it allows for redirecting and method passing beyond a  required redirect. Different statuses could be used to show alternate information, and loading progress can be displayed which may otherwise look like an error if the page doesnt load from a form submission. -->
-                <button id="loginSubmitBtn" type="button" >Submit</button>
-                <button id="loginCancelBtn" type="button" >Cancel</button>
-                <p id="loginExplaination">If you need a login please follow this link: <a href="/signup">Sign-up page</a>.</p>
-            </form>
-        </div>
+    <div id="loginPrompt" class="text-box hidden">
+        <form id="login" action="/login" method="POST">
+            <label id="loginNameLabel" for="name">Name:</label>
+            <input id="loginNameInput" type="text" name="name" required placeholder="display name"/>
+                <div><span id="nameTab" class="hidden">Incorrect Name</span></div>
+            <label id="loginPwdLabel" for="pwd">Password:</label>
+            <input id="loginPwdInput" type="password" name="pwd" required placeholder="********"/>
+                <div><span id="pwdTab" class="hidden">Incorrect Password</span></div>
+            <!-- Prevent implicit submission of the form -->
+            <button class="hidden" type="submit" disabled aria-hidden="true"></button>
+            <!-- Use this submit button because it allows for redirecting and method passing beyond a  required redirect. Different statuses could be used to show alternate information, and loading progress can be displayed which may otherwise look like an error if the page doesnt load from a form submission. -->
+            <button id="loginSubmitBtn" class="submitBtn" type="button" >Submit</button>
+            <button id="loginCancelBtn" class="cancelBtn" type="button" >Cancel</button>
+        </form>
+        <p class="finalDescription">If you forgot your password, or need an account: </br> Please visit the <a href="/signup">Signup page.</a></p>
     </div>
 
-    <div id="threadContainer" class="hidden"></div>
+    <div id="fullPageShade" class="hidden"></div>
 
     <div class="container">
         <div class="center">
-            <h1>COMMENT-STACK-MESSAGE-BOARD</h1>
+            <h1>COMMENT-STACK-BOARD</h1>
         </div>
     </div>
 
@@ -208,23 +46,40 @@
 
     <script>
 
-        function isInputValueCorrect(elementVal) {
-            if( elementVal.length >= 3 && elementVal.length <= 15 ) {
+        function isInputConditionMet(element) {
+            if( element.value.length >= 3 && element.value.length <= 15 ) {
                 return true;
             }
             return false;
         }
 
-        function setCorrectInputFields() {
-            document.getElementById('nameTab').classList.add( 'hidden' );
-            document.getElementById('pwdTab').classList.add( 'hidden' );
+        function correctFieldInput() {
+            document.getElementById('nameTab').classList.add('hidden');
+            document.getElementById('pwdTab').classList.add('hidden');
         }
 
-        function setIncorrectInputFields( ...elements) {
+        function incorrectFieldInput( ...elements) {
             for(let ele of elements) {
-                ele.style.backgroundColor = "#ff6f6f";
-                ele.nextElementSibling.firstChild.classList.remove( 'hidden' );
+                notifyIncorrectFieldContent(ele);
+                // * set the incorrect notifier attached to the element
+                ele.nextElementSibling.firstChild.classList.remove('hidden');
             }
+        }
+
+        function setDefaultFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.remove('incorrectContent');
+            element.nextElementSibling.firstChild.classList.add('hidden');
+        }
+
+        function notifyCorrectFieldContent(element) {
+            element.classList.remove('incorrectContent');
+            element.classList.add('correctContent');
+        }
+
+        function notifyIncorrectFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.add('incorrectContent');
         }
 
         function disableScroll() {
@@ -235,88 +90,91 @@
             document.body.classList.remove("stop-scrolling");
         }
 
-        ( function applyLoginBtnOnClick() {
-            let loginBtn = document.getElementById("loginBtn");
-            let loginPrompt = document.getElementById("loginPrompt");
-            let threadContainer = document.getElementById("threadContainer");
-
-                loginBtn.onclick = () => {
-                    loginPrompt.classList.toggle("hidden");
-                    threadContainer.classList.toggle("greyed-out");
-                    threadContainer.classList.toggle("hidden");
-                    disableScroll();
-                };
-        })();
-
         ( function assignInputOnUpdate() {
 
             for(let input of document.getElementsByTagName('input')) {
 
                 input.addEventListener( "focusin", () => {
-                    input.style.backgroundColor = '';
+                    setDefaultFieldContent(input);
                 } );
 
                 input.addEventListener( "focusout", () => {
-                    if( isInputValueCorrect(input.value) ) {
-                        input.style.backgroundColor = '#59a659'; // Green
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
+                        // * go through other inputs and check if prompt can return to normal.
+                        for(let otherInput of document.getElementsByTagName('input')) {
+                            if(!isInputConditionMet(otherInput)) { return ;}
+                        }
+                        correctFieldInput();
                     } else {
-                        input.style.backgroundColor = '#ff6f6f'; // Red
+                        notifyIncorrectFieldContent(input);
+                        incorrectFieldInput(input);
                     }
-                    setCorrectInputFields();
                 } );
 
                 input.addEventListener( "input", () => {
-                    if( isInputValueCorrect(input.value) ) {
-                        input.style.backgroundColor = '#59a659';
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
                     } else {
-                        input.style.backgroundColor = '#ff6f6f';
+                        notifyIncorrectFieldContent(input);
                     }
                 } );
             }
         })();
 
+        ( function applyLoginBtnOnClick() {
+            let loginPrompt = document.getElementById("loginPrompt");
+            let loginNameInput = document.getElementById("loginNameInput");
+            let fullPageShade = document.getElementById("fullPageShade");
+            let loginBtn = document.getElementById("loginBtn");
+                loginBtn.onclick = () => {
+                    loginPrompt.classList.toggle("hidden");
+                    fullPageShade.classList.toggle("hidden");
+                    disableScroll();
+
+                    loginNameInput.focus();
+                };
+        })();
+
         ( function applyLoginCancelBtnOnClick() {
-            let nameInput = document.getElementById("loginNameInput");
-            let pwdInput = document.getElementById("loginPwdInput");
+            let loginPrompt = document.getElementById("loginPrompt");
+            let loginForm = document.getElementById('login');
+            let inputs = loginForm.getElementsByTagName("input");
+            let fullPageShade = document.getElementById("fullPageShade");
+            let cancelBtn = document.getElementById('loginCancelBtn');
+                cancelBtn.onclick = () => {    
+                    loginPrompt.classList.toggle("hidden");
+                    
+                    correctFieldInput();
 
-            let loginCancelBtn = document.getElementById('loginCancelBtn');
-                loginCancelBtn.onclick = () => {
-                    let loginPrompt = document.getElementById("loginPrompt");
-                        loginPrompt.classList.toggle("hidden");
+                    for(let field of inputs) {
+                        setDefaultFieldContent(field);
+                        field.value = '';
+                    }
 
-                    setCorrectInputFields();
-
-                    nameInput.value = '';
-                    nameInput.style.backgroundColor = '';
-                    pwdInput.value = '';
-                    pwdInput.style.backgroundColor = '';
-
-                    threadContainer.classList.toggle("greyed-out");
-                    threadContainer.classList.toggle("hidden");
+                    fullPageShade.classList.toggle("hidden");
 
                     enableScroll();
                 }
         })();
         
         ( function applyLoginSubmitBtnOnClick() {
-
+            let nameInput = document.getElementById("loginNameInput");
+            let pwdInput = document.getElementById("loginPwdInput");
             let loginSubmitBtn = document.getElementById("loginSubmitBtn");
                 loginSubmitBtn.onclick = () => {
                     /* * Conver Into JSON Object Method*/
                     // ! This method is commonly over 6bytes = BEST
                     var loginObj = new Object();
 
-                    let nameInput = document.getElementById("loginNameInput");
-                    let pwdInput = document.getElementById("loginPwdInput");
-
-                    if( !isInputValueCorrect( nameInput.value ) ) {
-                        setIncorrectInputFields(nameInput);
+                    if( !isInputConditionMet( nameInput ) ) {
+                        incorrectFieldInput(nameInput);
                         return ;
                     }
                     loginObj.name = nameInput.value;
 
-                    if( !isInputValueCorrect( pwdInput.value ) ) {
-                        setIncorrectInputFields(pwdInput);
+                    if( !isInputConditionMet( pwdInput ) ) {
+                        incorrectFieldInput(pwdInput);
                         return ;
                     }
                     loginObj.pwd = pwdInput.value;
@@ -354,7 +212,7 @@
                         } */
 
                         if(this.status >= 400 && this.status <= 499) {
-                            setIncorrectInputFields( 
+                            incorrectFieldInput( 
                                 nameInput,
                                 pwdInput
                             );
@@ -367,9 +225,11 @@
                         }
                         return ;
                     };
+
                     logR.send(JSON.stringify(loginObj));
                 };
         })();
+
     </script>
 
     <script>

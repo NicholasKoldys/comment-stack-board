@@ -4,125 +4,8 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMENT-STACK-MESSAGE-BOARD - SIGN-UP</title>
-
-    <style>
-        :root {
-            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        }
-        h1 {
-            text-align: center;
-            font-size: 3ch;
-        }
-        a {
-            font-weight: bolder;
-            font-size: 1.8ch;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10vh;
-        }
-        .center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 75vw;
-            padding: 5ch;
-            background-color: #b3b3b370;
-        }
-        .text-box {
-            width: 75%;
-            padding: 5ch;
-            background-color: #b3b3b3b7;
-        }
-        form#signupLoginForm {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(7ch, 1fr)) repeat(2, 3fr) minmax(7ch, 2fr);
-            grid-template-rows: repeat(3, minmax(2ch, auto)) minmax(2ch, 2fr) minmax(6ch, auto);
-            column-gap: 1ch;
-            row-gap: 1ch;
-            grid-template-areas: 
-            "l1 l1 i1 i1 bf"
-            "l2 l2 i2 i2 bf"
-            "l3 l3 i3 i3 bf"
-            ". . . . ."
-            "su su su cl cl"
-            /* "cl cl" */
-            ;
-        }
-        form#signupLoginForm > label {
-            display: flex;
-            justify-content: right;
-            align-items: center;
-            /* text-align: right; */
-            padding: 1ch;
-        }
-        label#nameLabel {
-            grid-area: l1;
-        }
-        label#emailLabel {
-            grid-area: l2;
-        }
-        label#pwdLabel {
-            grid-area: l3;
-        }
-        form#signupLoginForm > input {
-            padding-left: 3ch;
-        }
-        input#signUpNameInput {
-            grid-area: i1;
-        }
-        input#signUpMailInput {
-            grid-area: i2;
-        }
-        input#signUpPwdInput {
-            grid-area: i3;
-        }
-        form#signupLoginForm > button {
-            padding: 2ch;
-            font-size: 1.7ch;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        #signUpSubmitBtn {
-            grid-area: su;
-            border: .3ch solid black;
-            border-radius: .5ch;
-            background-color: rgb(105, 156, 105);
-        }
-        #signUpSubmitBtn:hover {
-            border-color: white;
-            background-color: rgb(0, 160, 0);
-        }
-        #signUpCancelBtn {
-            grid-area: cl;
-        }
-        #signUpCancelBtn:hover {
-            border: darkgray;
-            background-color: gray;
-        }
-        #prompt {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            line-height: 3ch;
-        }
-        #incorrectFieldText {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            line-height: 3ch;
-            font-weight: bolder;
-            background-color: #ff6f6f;
-        }
-    </style>
+    <title>COMMENT-STACK-BOARD - SIGN-UP</title>
+    <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
 
@@ -132,11 +15,11 @@
 
     <div class="container">
         <div class="center">
-            <h1>COMMENT-STACK-MESSAGE-BOARD</br>- Sign-Up -</h1>
+            <h1>COMMENT-STACK-BOARD</br>- Sign-Up -</h1>
             <div class="text-box">
-                <h2 id="prompt">To participate and leave comments<br>Fill in the following information:</h2>
-                <h2 id="incorrectFieldText">INCORRECT FIELDS</br>Please check entry fields.</h2>
-                <form id="signupLoginForm" action="/signup" method="POST" target="">
+                <h2 class="promptAble">To participate and leave comments<br>Fill in the following information:</h2>
+                <h2 class="incorrectNotifier hidden">INCORRECT FIELDS</br>Please check entry fields.</h2>
+                <form id="signup" action="/signup" method="POST" target="">
                     <label id="nameLabel" for="name">Name:</label>
                     <input id="signUpNameInput" type="text" name="name" required placeholder="display name"/>
                     <label id="emailLabel" for="mail">Email:</label>
@@ -144,170 +27,193 @@
                     <label id="pwdLabel" for="pwd">Password:</label>
                     <input id="signUpPwdInput" type="password" name="pwd" required placeholder="********"/>
                     <!-- Prevent implicit submission of the form -->
-                    <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-                    <button id="signUpSubmitBtn" type="button">Submit</button>
-                    <button id="signUpCancelBtn" type="button">Clear</button>
+                    <button class="hidden" type="submit" disabled aria-hidden="true"></button>
+                    <button class="submitBtn" id="signupSubmitBtn" type="button">Submit</button>
+                    <button class="cancelBtn" id="signupCancelBtn" type="button">Clear</button>
                 </form>
             </div>
-            <script>
-
-                let emailReg = new RegExp(/[^._+][a-zA-Z0-9._\(\)+]{1,63}@[a-zA-z0-9\-]{1,45}.[a-zA-Z0-9]{1,45}/);
-
-                function isEmail(str) {
-                    if( !str.includes('@') ) { return false; }
-                    return emailReg.test(str);
-                }
-
-                function isInputConditionMet(element) {
-                    if(element.name == 'name') {
-                        if( element.value.length >= 3 && element.value.length <= 15 ) {
-                            return true;
-                        }
-                    } else if(element.name == 'email') {
-                        if( element.value.length >= 5 && element.value.length <= 256 ) {
-                            if( isEmail(element.value) ) {
-                                return true;
-                            }
-                        }
-                    } else if(element.name == 'pwd') {
-                        if(element.value.length >= 3 && element.value.length <= 15) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-
-                function correctFieldInput() {
-                    document.getElementById('prompt').style.display = 'flex';
-                    document.getElementById('incorrectFieldText').style.display = 'none';
-                }
-
-                function incorrectFieldInput( ...elements) {
-                    document.getElementById('prompt').style.display = 'none';
-                    document.getElementById('incorrectFieldText').style.display = 'flex';
-                    
-                    for(let ele of elements) {
-                        ele.style.backgroundColor = "#ff6f6f";
-                    }
-                }
-
-                ( function assignInputOnUpdate() {
-
-                    for(let input of document.getElementsByTagName('input')) {
-
-                        input.addEventListener( "focusin", () => {
-                            input.style.backgroundColor = '';
-                        } );
-
-                        input.addEventListener( "focusout", () => {
-                            if( isInputConditionMet(input) ) {
-                                input.style.backgroundColor = '#59a659'; // Green
-                            } else {
-                                input.style.backgroundColor = '#ff6f6f'; // Red
-                            }
-                            correctFieldInput();
-                        } );
-
-                        input.addEventListener( "input", () => {
-                            if( isInputConditionMet(input) ) {
-                                input.style.backgroundColor = '#59a659';
-                            } else {
-                                input.style.backgroundColor = '#ff6f6f';
-                            }
-                        } );
-                    }
-                })();
-
-                ( function assignCancelBtnOnClick() {
-                    let signUpCancelBtn = document.getElementById("signUpCancelBtn");
-                        signUpCancelBtn.onclick = () => {
-                            let signupForm = document.getElementById('signupLoginForm');
-                            let inputFields = signupForm.getElementsByTagName("input");
-                            
-                            correctFieldInput();
-
-                            for(let field of inputFields) {
-                                field.style.backgroundColor = '';
-                                field.value = '';
-                            }
-                        }
-                })();
-
-                ( function assignSubmitBtnOnClick() {
-                    let signUpSubmitBtn = document.getElementById("signUpSubmitBtn");
-                        signUpSubmitBtn.onclick = () => {
-                            var signupObj = new Object();
-
-                            let nameI = document.getElementById("signUpNameInput");
-                            let emailI = document.getElementById("signUpMailInput");
-                            let pwdI = document.getElementById("signUpPwdInput");
-
-                            if( !isInputConditionMet( nameI ) ) {
-                                return incorrectFieldInput( nameI ); 
-                            }
-                            signupObj.name = nameI.value;
-
-                            if( !isInputConditionMet( emailI ) ) {
-                                return incorrectFieldInput( emailI ); 
-                            }
-                            signupObj.email = emailI.value;
-
-                            if( !isInputConditionMet( pwdI ) ) {
-                                return incorrectFieldInput( pwdI ); 
-                            }
-                            signupObj.pwd = pwdI.value;
-
-                            let signupXhr = new XMLHttpRequest();
-                            signupXhr.responseType = 'text/html';
-                            signupXhr.open('POST', "/signup");
-                            signupXhr.setRequestHeader("Content-Type", "application/json");
-
-                            signupXhr.onload = function (e) {
-
-                                if (this.status >= 200 && this.status <= 299) {
-                                    
-                                    if(Boolean(this.getResponseHeader('Location'))) {
-                                        
-                                        if(this.getAllResponseHeaders().includes('email-attempt: ')) {
-                                            let headerPortion = this.getAllResponseHeaders().split('email-attempt: ');
-                                            let attemptEmail = headerPortion[1].substr(0, headerPortion[1].indexOf('\n'));
-                                            window.location.assign(`${ this.getResponseHeader('Location') }?=${ attemptEmail }`);
-
-                                            return ;
-                                        } else {
-                                            window.location.assign(this.getResponseHeader('Location'));
-                                        }
-                                    } else {
-                                        window.location.assign('/');
-                                    }
-                                    return ;
-                                }
-
-                                /* if (this.status >= 300 && this.status <= 399) {
-                                    // ! Unable to Control redirects with XHR
-                                } */
-
-                                if(this.status >= 400 && this.status <= 499) {
-                                    console.log('Declined');
-                                    incorrectFieldInput( 
-                                        nameI, pwdI, emailI
-                                    );
-                                    return ;
-                                }
-
-                                if(this.status >= 500 && this.status <= 599) {
-                                    alert('Please Notice! \nCOMMENT-STACK-MESSEGE-BOARD is currently undergoing maintenance.. \nPlease be patient, and checkback later. \n\nThank You.');
-                                    window.location.assign('/');
-                                }
-                                return ;
-                            };
-
-                            signupXhr.send(JSON.stringify(signupObj));
-                        };
-                })();
-            </script>
         </div>
     </div>
+
+    <script>
+
+        let emailReg = new RegExp(/[^._+][a-zA-Z0-9._\(\)+]{1,63}@[a-zA-z0-9\-]{1,45}.[a-zA-Z0-9]{1,45}/);
+
+        function isEmail(str) {
+            if( !str.includes('@') ) { return false; }
+            return emailReg.test(str);
+        }
+
+        function isInputConditionMet(element) {
+            if(element.name == 'name') {
+                if( element.value.length >= 3 && element.value.length <= 15 ) {
+                    return true;
+                }
+            } else if(element.name == 'email') {
+                if( element.value.length >= 5 && element.value.length <= 256 ) {
+                    if( isEmail(element.value) ) {
+                        return true;
+                    }
+                }
+            } else if(element.name == 'pwd') {
+                if(element.value.length >= 3 && element.value.length <= 15) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function correctFieldInput() {
+            document.getElementsByClassName('promptAble')[0].classList.remove('hidden');
+            document.getElementsByClassName('incorrectNotifier')[0].classList.add('hidden');
+        }
+
+        function incorrectFieldInput( ...elements) {
+            document.getElementsByClassName('promptAble')[0].classList.add('hidden');
+            document.getElementsByClassName('incorrectNotifier')[0].classList.remove('hidden');
+            
+            for(let ele of elements) {
+                notifyIncorrectFieldContent(ele);
+            }
+        }
+
+        function setDefaultFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.remove('incorrectContent');
+        }
+
+        function notifyCorrectFieldContent(element) {
+            element.classList.remove('incorrectContent');
+            element.classList.add('correctContent');
+        }
+
+        function notifyIncorrectFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.add('incorrectContent');
+        }
+
+        ( function assignInputOnUpdate() {
+
+            for(let input of document.getElementsByTagName('input')) {
+
+                input.addEventListener( "focusin", () => {
+                    setDefaultFieldContent(input);
+                } );
+
+                input.addEventListener( "focusout", () => {
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
+                        // * go through other inputs and check if prompt can return to normal.
+                        for(let otherInput of document.getElementsByTagName('input')) {
+                            if(!isInputConditionMet(otherInput)) { return ;}
+                        }
+                        correctFieldInput();
+                    } else {
+                        notifyIncorrectFieldContent(input);
+                        incorrectFieldInput(input);
+                    }
+                } );
+
+                input.addEventListener( "input", () => {
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
+                    } else {
+                        notifyIncorrectFieldContent(input);
+                    }
+                } );
+            }
+        })();
+
+        ( function assignCancelBtnOnClick() {
+            let cancelBtn = document.getElementById("signupCancelBtn");
+                cancelBtn.onclick = () => {
+                    let signupForm = document.getElementById('signup');
+                    
+                    correctFieldInput();
+
+                    for(let field of signupForm.getElementsByTagName("input")) {
+                        setDefaultFieldContent(field);
+                        field.value = '';
+                    }
+                }
+        })();
+
+        ( function assignSubmitBtnOnClick() {
+            let submitBtn = document.getElementById("signupSubmitBtn");
+                submitBtn.onclick = () => {
+                    var signupObj = new Object();
+
+                    let nameI = document.getElementById("signUpNameInput");
+                    let emailI = document.getElementById("signUpMailInput");
+                    let pwdI = document.getElementById("signUpPwdInput");
+
+                    if( !isInputConditionMet( nameI ) ) {
+                        return incorrectFieldInput( nameI ); 
+                    }
+                    signupObj.name = nameI.value;
+
+                    if( !isInputConditionMet( emailI ) ) {
+                        return incorrectFieldInput( emailI ); 
+                    }
+                    signupObj.email = emailI.value;
+
+                    if( !isInputConditionMet( pwdI ) ) {
+                        return incorrectFieldInput( pwdI ); 
+                    }
+                    signupObj.pwd = pwdI.value;
+
+                    let signupXhr = new XMLHttpRequest();
+                    signupXhr.responseType = 'text/html';
+                    signupXhr.open('POST', "/signup");
+                    signupXhr.setRequestHeader("Content-Type", "application/json");
+
+                    signupXhr.onload = function (e) {
+
+                        if (this.status >= 200 && this.status <= 299) {
+                            
+                            if(Boolean(this.getResponseHeader('Location'))) {
+                                
+                                if(this.getAllResponseHeaders().includes('email-attempt: ')) {
+                                    let headerPortion = this.getAllResponseHeaders().split('email-attempt: ');
+                                    let attemptEmail = headerPortion[1].substr(0, headerPortion[1].indexOf('\n'));
+                                    window.location.assign(`${ this.getResponseHeader('Location') }?=${ attemptEmail }`);
+
+                                    return ;
+                                } else {
+                                    window.location.assign(this.getResponseHeader('Location'));
+                                }
+                            } else {
+                                window.location.assign('/');
+                            }
+                            return ;
+                        }
+
+                        /* if (this.status >= 300 && this.status <= 399) {
+                            // ! Unable to Control redirects with XHR
+                        } */
+
+                        if(this.status >= 400 && this.status <= 499) {
+                            return incorrectFieldInput( 
+                                nameI, pwdI, emailI
+                            );
+                        }
+
+                        if(this.status >= 500 && this.status <= 599) {
+                            alert('Please Notice! \nCOMMENT-STACK-MESSEGE-BOARD is currently undergoing maintenance.. \nPlease be patient, and checkback later. \n\nThank You.');
+                            window.location.assign('/');
+                        }
+                        return ;
+                    };
+
+                    signupXhr.send(JSON.stringify(signupObj));
+                };
+        })();
+
+        ( () => {
+            document.getElementById('signUpNameInput').focus()
+        })();
+
+    </script>
     
 </body>
 </html>

@@ -4,97 +4,24 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COMMENT-STACK-MESSAGE-BOARD - Email Confirmation</title>
-    
-    <style>
-        :root {
-            font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
-        }
-        h1 {
-            text-align: center;
-            font-size: 3ch;
-        }
-        a {
-            font-weight: bolder;
-            font-size: 1.8ch;
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 10vh;
-        }
-        .center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 75vw;
-            padding: 5ch;
-            background-color: #b3b3b370;
-        }
-        .text-box {
-            display: flex;
-            flex-direction: column;
-            width: 75%;
-            padding: 5ch;
-            background-color: #b3b3b3b7;
-        }
-        #eConfirm > button {
-            text-align: center;
-            font-size: 2ch;
-            font-weight: bold;
-            margin: 1ch;
-            padding: 2ch;
-            border: .3ch solid green;
-            border-radius: .5ch;
-            background-color: rgb(105, 156, 105);
-            /* color: black; */
-            cursor: pointer;
-        }
-        #eConfirm > button:hover {
-            background-color: rgb(0, 160, 0);
-            color: white;
-        }
-        #eConfirm > input {
-            text-align: center;
-            font-size: 2ch;
-            margin: 1ch;
-            padding: 2ch;
-        }
-        #prompt {
-            display: block;
-            text-align: center;
-        }
-        #incorrectCodeText {
-            display: none;
-            text-align: center;
-            font-size: 2ch;
-            font-weight: bolder;
-            margin: 1ch;
-            padding: 2ch;
-            background-color: #ff6f6f;
-        }
-
-    </style>
+    <title>COMMENT-STACK-BOARD - Email Confirmation</title>
+    <link rel="stylesheet" href="/css/style.css" />
 </head>
 <body>
 
     <div class="container">
         <div class="center">
-            <h1>COMMENT-STACK-MESSAGE-BOARD</h1>
+            <h1>COMMENT-STACK-BOARD</h1>
             <div class="text-box">
-                <form id="eConfirm" style="display: flex; flex-direction: column;"
-                    action="/confirm+email" method="POST" target="">
-                        <span id="prompt"><h2>Please enter email confirmation code</h3></span>
-                        <span id="incorrectCodeText"><h2>INCORRECT CODE</h2></span>
-                        <label for="ecode">Recieved Email Code:
-                        </label>
-                        <input id="ecodeConfirmInput" type="text" name="ecode" required placeholder="- - - - - - - -"/>
-                            <!-- Prevent implicit submission of the form -->
-                        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-                        <button id="eConfirmSubmitBtn" type="button">Submit</button>
+                <form id="eConfirm" action="/confirm+email" method="POST" target="">
+                    <h2 class="promptAble">Please enter email confirmation code</h2>
+                    <h2 class="incorrectNotifier hidden">INCORRECT CODE</h2>
+                    <label for="ecode">Recieved Email Code:
+                    </label>
+                    <input id="ecodeInput" type="text" name="ecode" required placeholder="- - - - - - - -"/>
+                        <!-- Prevent implicit submission of the form -->
+                    <button class="hidden" type="submit" disabled aria-hidden="true"></button>
+                    <button class="submitBtn" id="submitBtn" type="button">Submit</button>
                 </form>
             </div>
         </div>
@@ -102,31 +29,96 @@
 
     <script>
 
-        function isCodeConditionMet(elementVal) {
-            if( elementVal.length >= 3 && elementVal.length <= 15 ) {
-                if(parseInt(elementVal) == elementVal) {
+        function applyInputCleanup(element) {
+            if(element.value.length > 8) {
+                element.value = element.value.replace(/\s/g, '');
+            }
+        }
+
+        function isInputConditionMet(element) {
+            if( element.value.length >= 3 && element.value.length <= 9 ) {
+                if(parseInt(element.value) == element.value) {
                     return true;
                 }
             }
             return false;
         }
 
-        function incorrectCodeInput() {
-            document.getElementById('ecodeConfirmInput').style.backgroundColor = '#ff6f6f';
-            document.getElementById('prompt').style.display = 'none';
-            document.getElementById('incorrectCodeText').style.display = 'block';
+        function setDefaultFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.remove('incorrectContent');
         }
 
-        // TODO instead of button automatically read field on 8 digit enter.
-        let eConfirmSubmitBtn = document.getElementById("eConfirmSubmitBtn");
-            eConfirmSubmitBtn.onclick = () => {
+        function notifyCorrectFieldContent(element) {
+            element.classList.remove('incorrectContent');
+            element.classList.add('correctContent');
+        }
 
+        function notifyIncorrectFieldContent(element) {
+            element.classList.remove('correctContent');
+            element.classList.add('incorrectContent');
+        }
+
+        function correctFieldInput() {
+            document.getElementsByClassName('promptAble')[0].classList.remove('hidden');
+            document.getElementsByClassName('incorrectNotifier')[0].classList.add('hidden');
+        }
+
+        function incorrectFieldInput( ...elements) {
+            document.getElementsByClassName('promptAble')[0].classList.add('hidden');
+            document.getElementsByClassName('incorrectNotifier')[0].classList.remove('hidden');
+            
+            for(let ele of elements) {
+                notifyIncorrectFieldContent(ele);
+            }
+        }
+
+        ( function assignInputOnUpdate() {
+            for(let input of document.getElementsByTagName('input')) {
+
+                input.addEventListener( "focusin", () => {
+                    setDefaultFieldContent(input);
+                } );
+
+                input.addEventListener( "focusout", () => {
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
+                        // * go through other inputs and check if prompt can return to normal.
+                        for(let otherInput of document.getElementsByTagName('input')) {
+                            if(!isInputConditionMet(otherInput)) { return ;}
+                        }
+                        correctFieldInput();
+                    } else {
+                        notifyIncorrectFieldContent(input);
+                        incorrectFieldInput(input);
+                    }
+                } );
+
+                input.addEventListener( "input", () => {
+                    if( isInputConditionMet(input) ) {
+                        notifyCorrectFieldContent(input);
+                    } else {
+                        notifyIncorrectFieldContent(input);
+                    }
+                } );
+
+                input.addEventListener( 'paste', () => {
+                    document.getElementById("submitBtn").click();
+                } );
+            }
+        })();
+
+        (function assignSubmitBtnOnClick() {
+            let submitBtn = document.getElementById("submitBtn");
+            submitBtn.onclick = () => {
                 var postData = new Object();
-                let codeInput = document.getElementById("ecodeConfirmInput");
+
+                let codeInput = document.getElementById("ecodeInput");
+
+                applyInputCleanup(codeInput);
                 
-                if(!isCodeConditionMet(codeInput.value)) {
-                    incorrectCodeInput();
-                    return ;
+                if(!isInputConditionMet(codeInput)) {
+                    return incorrectFieldInput(codeInput);
                 }
                 postData.ecode = codeInput.value;
 
@@ -152,8 +144,7 @@
                         } */
 
                         if(this.status >= 400 && this.status <= 499) {
-                            incorrectCodeInput();
-                            return ;
+                            return incorrectFieldInput(codeInput);
                         }
 
                         if(this.status >= 500 && this.status <= 599) {
@@ -164,6 +155,8 @@
                     };
                 ecodeXhr.send(JSON.stringify(postData));
             };
+        })();
+
     </script>
     
 </body>
