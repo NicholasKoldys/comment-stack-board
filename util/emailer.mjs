@@ -156,7 +156,7 @@ async function sendMail(recipient, emailDescription, emailContent, file) {
         const subject = emailDescription;
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
         const messageParts = [
-            `From: COMMENT-STACK-MESSAGE-BOARD Mailer <${process.env.GM_CLIENT_EMAIL}>`,
+            `From: COMMENT-STACK-BOARD Mailer <${process.env.GM_CLIENT_EMAIL}>`,
             `To: ${recipient}`,
             'Content-Type: text/html; charset=utf-8',
             'MIME-Version: 1.0',

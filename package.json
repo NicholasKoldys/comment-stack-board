@@ -1,12 +1,12 @@
 {
     "name": "nicholas.koldys",
-    "url": "https://github.com/NicholasKoldys/comment-stack-message-board",
-    "homepage": "https://github.com/NicholasKoldys/comment-stack-message-board",
+    "url": "https://github.com/NicholasKoldys/comment-stack-board",
+    "homepage": "https://github.com/NicholasKoldys/comment-stack-board",
     "description": "a web development project to explore HTTP/HTTPS Transmit and Recieve methods and the node.js backend.",
     "version": "0.0.1",
     "repository": {
         "type": "git",
-        "url": "https://github.com/NicholasKoldys/comment-stack-message-board"
+        "url": "https://github.com/NicholasKoldys/comment-stack-board"
     },
     "config": {
         "port": "3000"
