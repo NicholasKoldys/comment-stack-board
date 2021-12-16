@@ -111,6 +111,7 @@ db/.dump/
 nginx/
 docker-compose.yml*
 dockerfile*
+Dockerfile*
 .dockerignore*
 
 # NON-Push Test File
