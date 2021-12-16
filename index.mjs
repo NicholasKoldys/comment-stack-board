@@ -22,6 +22,10 @@ loadEnv().then( (result, rejection) => {
                 await setPepperEnv();
             }
         })();
+
+        process.on( 'SIGTERM' , () => {
+            module.shutdownDBPool();
+        });
     });
 
     import('./util/emailer.mjs').then( (module, rejection) => {
@@ -35,6 +39,9 @@ loadEnv().then( (result, rejection) => {
         })();
     });
 
-    import('./util/server.mjs');
-    
+    import('./util/server.mjs').then( (module, rejection) => {
+        process.on('SIGTERM', () => {
+            module.terminateServer();
+        });
+    });
 });

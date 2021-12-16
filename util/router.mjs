@@ -276,12 +276,18 @@ async function declineRoute(status, response, message, request) {
         // * User attempted to circumvent post request.
         // TODO log IP and block if reoccur.
 
-        var ip = request?.ip 
-            || request?.connection?.remoteAddress 
-            || request?.socket?.remoteAddress 
-            || request?.connection?.socket?.remoteAddress;
+        // * IP is pulled from nginx proxy headers.
+        var ip = request.getHeader('X-Real-IP');
 
-        blackList.push(ip);
+        // ? Remove comment if just hosting through nodejs
+        // var ip = request?.ip 
+        //     || request?.connection?.remoteAddress 
+        //     || request?.socket?.remoteAddress 
+        //     || request?.connection?.socket?.remoteAddress;
+
+        if(Boolean(ip)) {
+            blackList.push(ip);
+        }
         return getStaticPage(status, '/401', response);
     }
     if(status == 401) {

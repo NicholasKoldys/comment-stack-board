@@ -75,4 +75,4 @@ function shutdownDBPool() {
     } catch (e) { debugLog(3, '', e, e.stack); }
 }
 
-export { pool, testDb };
+export { pool, testDb, shutdownDBPool };

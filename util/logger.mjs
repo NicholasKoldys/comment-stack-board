@@ -8,7 +8,7 @@
 export function debugLog(level, ...content) {
 
     try {
-        if(!process.env.DEBUG_MODE && level <= process.env.DEBUG_THRESHOLD) return;
+        if(!process.env.NODE_LOGGER_DEBUG_MODE && level <= process.env.NODE_LOGGER_DEBUG_THRESHOLD) return;
     
         process.stdout.write( `${level} : ` + new Date().toISOString() + ' : ' );
     
