@@ -1,20 +1,27 @@
 'use strict';
-import https from 'https';
-import fs from 'fs';
+import http from 'http';
+// import https from 'https';
+// import fs from 'fs';
 import { debugLog } from './logger.mjs';
 import { checkGetRoute, checkPostRoute } from './router.mjs';
 
+// * Docker container uses HOSTNAME as env.
 const HOSTNAME = process.env.HOSTNAME || "127.0.0.1";
-const PORT = process.env.PORT || 3000;
 
-const options = {
-    key: fs.readFileSync("./.private/ssl-self-cert/key.pem"),
-    cert: fs.readFileSync("./.private/ssl-self-cert/cert.pem")
-};
+// ? Enable if running outside docker container
+// const HOSTNAME = process.env.NODE_HOSTNAME || "127.0.0.1"
+
+const PORT = process.env.NODE_PORT || 3000;
+
+// const options = {
+//     key: fs.readFileSync("./.private/ssl-self-cert/key.pem"),
+//     cert: fs.readFileSync("./.private/ssl-self-cert/cert.pem")
+// };
 
 export var blackList = [ ];
 
-const server = https.createServer(options);
+// const server = https.createServer(options);
+const server = http.createServer();
 
 server.on('request', (req, res) => {
 
@@ -43,10 +50,14 @@ server.on('clientError', (err, socket) => {
 });
 
 server.listen(PORT, HOSTNAME, () => {
-    debugLog(1, `Server running at https://${HOSTNAME}:${PORT}/`);
+    debugLog(1, `Server running at http://${HOSTNAME}:${PORT}/`);
     debugLog(1, 'Developed by: ', process.env.DEV_NAME);
     debugLog(1, 'Now Listening...');
 });
+
+export function terminateServer() {
+    server.close(() => debugLog(3, 'Node Server: closed'));
+}
 
 // ? Export Module JS
 export default 'server.mjs';
