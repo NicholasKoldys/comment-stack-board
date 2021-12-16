@@ -5,7 +5,21 @@
 */
 
 :root {
+    --night-text: rgb(231, 231, 216);
+    --night-btn: #888888;
+    --night-btn-hover: #585858;
+    --grn-btn: rgb(105, 156, 105);
+    --grn-btn-hover: rgb(0, 160, 0);
+    --night-bg: #2f3136;
+    --night-bg-cont: #272930;
+    --night-primary: #565a63;
+    --night-secondary: #4d4f5c;
+
     font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    color: var(--night-text);
+}
+body {
+    background-color: var(--night-bg);
 }
 h1 {
     text-align: center;
@@ -19,23 +33,34 @@ a {
     font-weight: bolder;
     font-size: 1.8ch;
 }
-.container {
+input {
+    border: #2f3136;
+    background-color: #565a63;
+}
+textarea {
+    font-size: 1.5ch;
+    color: var(--night-text);
+    border: #2f3136;
+    background-color: #565a63;
+}
+
+div.container {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     margin-top: 10vh;
 }
-.center {
+div.center {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     width: 75vw;
     padding: 5ch;
-    background-color: #b3b3b370;
+    background-color: var(--night-primary);
 }
-.text-box {
+div.text-box {
     width: 75%;
     padding: 5ch;
     background-color: #b3b3b3b7;
@@ -71,15 +96,22 @@ button {
 }
 button.submitBtn {
     font-size: 2ch;
-    border: .3ch solid green;
-    background-color: rgb(105, 156, 105);
+    background-color: var(--grn-btn);
 }
 button.submitBtn:hover {
-    background-color: rgb(0, 160, 0);
     color: white;
+    border-color: green;
+    background-color: var(--grn-btn-hover);
 }
+
 button.cancelBtn {
     font-size: 2ch;
+    background-color: var(--night-btn);
+}
+button.cancelBtn:hover {
+    color: white;
+    border: black;
+    background-color: var(--night-btn-hover);
 }
 
 p.finalDescription {
@@ -118,7 +150,7 @@ div#loginPrompt {
     right: 10%;
     bottom: auto;
     left: 10%;
-    background-color: darkgray;
+    background-color: var(--night-primary);
 }
 div#fullPageShade {
     position: absolute;
@@ -155,17 +187,24 @@ li.comment > button {
 li.comment > div.commentBox {
     margin-bottom: 1ch;
     padding: 1ch;
-    background-color: rgb(192, 192, 192);
+    background-color: var(--night-secondary);
 }
 li.comment > div.commentBox > p:first-child {
     font-size: 2ch;
     font-weight: bold;
 }
+button.createCommentFormBtn {
+    margin-left: 2ch;
+    background-color: var(--night-btn);
+}
+button.threadCollapseBtn {
+    margin-left: 2ch;
+}
 button.show-thread {
-    background-color: rgb(105, 156, 105);
+    background-color: var(--grn-btn)
 }
 button.hide-thread {
-    background-color: rgb(170, 170, 170);
+    background-color: var(--night-btn)
 }
 
 
@@ -350,3 +389,29 @@ button#signupCancelBtn {
 }
 
 
+@media screen and (max-width: 475px) {
+    
+    form.addCommentForm {
+        width: auto;
+    }
+
+    div.center {
+        padding-left: 0;
+        padding-right: 0;
+        width: auto;
+    }
+
+    ul.threadList {
+        padding: 0;
+        /* background-color: red; */
+    }
+
+    ul.threadList > li.comment {
+        margin-top: 2vh;
+        margin-bottom: 7vh;
+        width: auto;
+        border-left: 1px solid var(--night-btn);
+        border-bottom: 1px solid var(--night-btn);
+        border-right: -1px;
+    }
+}

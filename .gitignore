@@ -109,8 +109,9 @@ dist
 .test
 db/.dump/
 nginx/
-docker-compose.yml
-dockerfile
+docker-compose.yml*
+dockerfile*
+.dockerignore*
 
 # NON-Push Test File
 NPTEST*

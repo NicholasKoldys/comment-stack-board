@@ -222,7 +222,7 @@
             } );
 
             btnElement.insertAdjacentElement( 'beforebegin', formTemplate );
-            formTemplate.classList.toggle('hidden');
+            formTemplate.classList.add('hidden');
         }
 
         function revealAllAddCommentBtns() {
@@ -239,7 +239,7 @@
             for(let i=0; i < collapsableThreads.length; i++) {
                 // * if their are child elements like thread comments, then show it.
                 if(collapsableThreads[i].childElementCount > 0) {
-                    collapsableThreads[i].classList.toggle('hidden');
+                    collapsableThreads[i].classList.remove('hidden');
                 }
             }
         }
@@ -252,7 +252,7 @@
                 let commentId = createCommentFormBtns[i].parentElement.id.split('comment_')[1];
                 createCommentFormBtns[i].onclick = function () {
                     createCommentForm(commentId, this);
-                    this.classList.toggle('hidden');
+                    this.classList.add('hidden');
                 }
             }
         }
