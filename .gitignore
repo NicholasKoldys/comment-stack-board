@@ -108,6 +108,9 @@ dist
 .db.txt
 .test
 db/.dump/
+nginx/
+docker-compose.yml
+dockerfile
 
 # NON-Push Test File
 NPTEST*
