@@ -6,7 +6,10 @@ import { debugLog } from './logger.mjs';
 import { checkGetRoute, checkPostRoute } from './router.mjs';
 
 // * Docker container uses HOSTNAME as env.
-const HOSTNAME = process.env.HOSTNAME || "127.0.0.1";
+    // ! but it does not work as expected. just use the broadcast 0.0.0.0
+// const HOSTNAME = process.env.HOSTNAME || "0.0.0.0";
+
+const HOSTNAME = "0.0.0.0";
 
 // ? Enable if running outside docker container
 // const HOSTNAME = process.env.NODE_HOSTNAME || "127.0.0.1"
@@ -25,14 +28,18 @@ const server = http.createServer();
 
 server.on('request', (req, res) => {
 
-    var ip = req?.ip 
+    // var ip = req.getHeader('X-Real-IP');
+
+    /* var ip = req?.ip 
             || req?.connection?.remoteAddress 
             || req?.socket?.remoteAddress 
-            || req?.connection?.socket?.remoteAddress;
+            || req?.connection?.socket?.remoteAddress; */
 
-    if(blackList.indexOf(ip) > -1) {
-        return res.end();
-    }
+    /* if(Boolean(ip)) {
+        if(blackList.indexOf(ip) > -1) {
+            return res.end();
+        }
+    } */
 
     if(req.method === 'GET') {
         debugLog(3, 'Recieved GET req..');

@@ -222,7 +222,7 @@
             } );
 
             btnElement.insertAdjacentElement( 'beforebegin', formTemplate );
-            formTemplate.classList.add('hidden');
+            formTemplate.classList.remove('hidden');
         }
 
         function revealAllAddCommentBtns() {
@@ -250,7 +250,7 @@
             for(let i=0; i < createCommentFormBtns.length; i++) {
                 
                 let commentId = createCommentFormBtns[i].parentElement.id.split('comment_')[1];
-                createCommentFormBtns[i].onclick = function () {
+                createCommentFormBtns[i].onclick = function() {
                     createCommentForm(commentId, this);
                     this.classList.add('hidden');
                 }

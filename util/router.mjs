@@ -155,10 +155,6 @@ async function checkPostRoute(req, res) {
         if(req.url == '/add+comment') {
             debugLog(3, 'Entering post.request "/add+comment" | length = ', req.socket.bytesRead);
             // * Decline request if comment is too long
-            if(req.socket.bytesRead > 891) { 
-                declineRoute(200, res, 'Comment Too Long');
-                return ;
-            }
             let cookieMap = getClientCookieMap(req.headers.cookie, [ 'Access-Token' ]);
             if(Boolean(cookieMap)) {
                 let jwtToken = parseJWT( cookieMap.get('Access-Token') );
@@ -169,6 +165,7 @@ async function checkPostRoute(req, res) {
                 }
             }
             // ? 401 : Un-Authorized Access
+            // TODO revoke credentials.
             return declineRoute(401, res, 'Un-Authorized');
 
         } else {
@@ -280,14 +277,15 @@ async function declineRoute(status, response, message, request) {
         var ip = request.getHeader('X-Real-IP');
 
         // ? Remove comment if just hosting through nodejs
-        // var ip = request?.ip 
-        //     || request?.connection?.remoteAddress 
-        //     || request?.socket?.remoteAddress 
-        //     || request?.connection?.socket?.remoteAddress;
+        /* var ip = request?.ip 
+            || request?.connection?.remoteAddress 
+            || request?.socket?.remoteAddress 
+            || request?.connection?.socket?.remoteAddress; */
 
-        if(Boolean(ip)) {
-            blackList.push(ip);
-        }
+        // if(Boolean(ip)) {
+        //     blackList.push(ip);
+        // }
+        
         return getStaticPage(status, '/401', response);
     }
     if(status == 401) {
@@ -653,6 +651,10 @@ async function processCommentPost(req, res, userId) {
             if(!Boolean(sterileComment)) { throw 'Comment does not meet standards.'; }
 
             debugLog(3, 'Attempting Comment Creation.');
+
+            if(Buffer.byteLength(sterileComment, 'utf-8') > 128) {
+                throw 'Comment too long';
+            }
 
             let isCommentCreated = await createComment(sterileComment, testThreadId, userId);
             debugLog(6, 'CommentCreated: ', isCommentCreated);
